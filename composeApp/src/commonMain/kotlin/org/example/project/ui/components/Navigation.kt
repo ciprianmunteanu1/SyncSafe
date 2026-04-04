@@ -3,6 +3,7 @@ package org.example.project.ui.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,69 +14,198 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.example.project.model.Group
-import org.example.project.model.Member
-import org.example.project.model.MemberStatus
-import org.example.project.ui.screens.HomeScreen
-import org.example.project.ui.screens.GroupSetupScreen
-
-val dummyGroup = Group(
-    id = "1",
-    name = "Familia Popescu",
-    inviteCode = "X7B9K2",
-    members = listOf(
-        Member("1", "Tatăl", MemberStatus.SAFE),
-        Member("2", "Mama", MemberStatus.UNKNOWN),
-        Member("3", "Copilul", MemberStatus.ON_THE_WAY),
-        Member("4", "Bunicul", MemberStatus.NEEDS_HELP)
-    )
-)
+import org.example.project.data.GroupRepository
+import org.example.project.data.AuthManager
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.CircularProgressIndicator
+import kotlinx.coroutines.launch
+import kotlin.random.Random
+import kotlin.time.Clock
+import org.example.project.ui.screens.*
+import org.example.project.ui.screens.auth.WelcomeScreen
+import org.example.project.ui.screens.auth.CreateAccountScreen
+import org.example.project.ui.screens.auth.LoginScreen
+import org.example.project.ui.screens.auth.SelectGroupScreen
+import org.example.project.data.AuthRepository
 
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val scope = rememberCoroutineScope()
+
+    val group by GroupRepository.group.collectAsState()
+    val alerts by GroupRepository.alerts.collectAsState()
+
+    val startDestination = "welcome"
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        popUpTo(navController.graph.startDestinationId) {
-                            saveState = true
+            if (currentRoute !in listOf("welcome", "login", "register", "select_group")) {
+                BottomNavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.startDestinationRoute ?: "welcome") {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
-                }
-            )
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "setup",
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("setup") {
-                GroupSetupScreen(
-                    onCreateGroup = { _, _ -> navController.navigate("home") { popUpTo("setup") { inclusive = true } } },
-                    onJoinGroup = { _, _ -> navController.navigate("home") { popUpTo("setup") { inclusive = true } } }
+            composable("welcome") {
+                WelcomeScreen(
+                    onNavigateToCreate = { navController.navigate("register") },
+                    onNavigateToLogin = { navController.navigate("login") },
+                    onAutoLoginSuccess = { route -> 
+                        navController.navigate(route) { popUpTo("welcome") { inclusive = true } }
+                    }
+                )
+            }
+            composable("register") {
+                CreateAccountScreen(
+                    onBack = { navController.popBackStack() },
+                    onSubmit = { userName, password, groupName, inviteCode -> 
+                        val res = AuthRepository.register(userName, password)
+                        if (res.isSuccess) {
+                            AuthManager.saveSession(userName, password)
+                            
+                            val groupRes = if (groupName.isNotBlank()) {
+                                GroupRepository.createGroup(groupName)
+                            } else {
+                                GroupRepository.joinGroup(inviteCode)
+                            }
+                            
+                            if (groupRes.isSuccess) {
+                                navController.navigate("home") { popUpTo("register") { inclusive = true } }
+                                Result.success(true)
+                            } else {
+                                Result.failure(groupRes.exceptionOrNull() ?: Exception("Circle creation/join failed."))
+                            }
+                        } else {
+                            Result.failure(res.exceptionOrNull() ?: Exception("Unknown error"))
+                        }
+                    }
+                )
+            }
+            composable("login") {
+                LoginScreen(
+                    onBack = { navController.popBackStack() },
+                    onSubmit = { userName, password -> 
+                        val res = AuthRepository.login(userName, password)
+                        if (res.isSuccess) {
+                            AuthManager.saveSession(userName, password)
+                            
+                            val codeToUse = res.getOrNull()?.lastActiveGroup ?: res.getOrNull()?.joinedGroups?.keys?.firstOrNull()
+                            
+                            if (!codeToUse.isNullOrBlank()) {
+                                val groupRes = GroupRepository.connectToGroup(codeToUse)
+                                if (groupRes.isSuccess) {
+                                    navController.navigate("home") { popUpTo("login") { inclusive = true } }
+                                    Result.success(true)
+                                } else {
+                                    Result.failure(groupRes.exceptionOrNull() ?: Exception("Failed to enter Circle"))
+                                }
+                            } else {
+                                navController.navigate("home") { popUpTo("login") { inclusive = true } }
+                                Result.success(true)
+                            }
+                        } else {
+                            Result.failure(res.exceptionOrNull() ?: Exception("Login failed."))
+                        }
+                    }
+                )
+            }
+            composable("select_group") {
+                SelectGroupScreen(
+                    onCreateGroup = { name -> 
+                        scope.launch {
+                            if (GroupRepository.createGroup(name).isSuccess) {
+                                navController.navigate("home") { popUpTo("select_group") { inclusive = true } }
+                            }
+                        }
+                    },
+                    onJoinGroup = { code -> 
+                        scope.launch {
+                            if (GroupRepository.joinGroup(code).isSuccess) {
+                                navController.navigate("home") { popUpTo("select_group") { inclusive = true } }
+                            }
+                        }
+                    },
+                    onLogout = {
+                        AuthManager.clearSession()
+                        AuthRepository.logout()
+                        navController.navigate("welcome") { popUpTo("select_group") { inclusive = true } }
+                    }
                 )
             }
             composable("home") { 
                 HomeScreen(
-                    group = dummyGroup,
-                    onSafeClick = { /* MVP placeholder */ },
-                    onNeedHelpClick = { /* MVP placeholder */ },
+                    group = group,
+                    joinedGroups = org.example.project.data.AuthRepository.currentUser?.joinedGroups ?: emptyMap(),
+                    onSwitchGroup = { inviteCode ->
+                        scope.launch { org.example.project.data.GroupRepository.switchGroup(inviteCode) }
+                    },
+                    onCreateOrJoin = { navController.navigate("select_group") },
+                    onSafeClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) } },
+                    onNeedHelpClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.NEEDS_HELP) } },
                     onCrisisModeClick = { navController.navigate("crisis") }
                 ) 
             }
-            composable("status") { PlaceholderScreen("Status Screen") }
-            composable("map") { PlaceholderScreen("Map Screen") }
-            composable("feed") { PlaceholderScreen("Activity Feed Screen") }
-            composable("guide") { PlaceholderScreen("Offline Guide Screen") }
+            composable("status") { 
+                StatusScreen(
+                    onStatusClick = { status -> 
+                        scope.launch { GroupRepository.updateMyStatus(status) } 
+                    },
+                    onLogoutClick = {
+                        AuthManager.clearSession()
+                        AuthRepository.logout()
+                        navController.navigate("welcome") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
+                ) 
+            }
+            composable("map") { 
+                group?.let { g ->
+                    MapScreen(
+                        members = g.members,
+                        meetingPoints = g.meetingPoints,
+                        onSetMeetingPoint = { lat, lng, name -> 
+                            scope.launch {
+                                val randomPart = (1..6).map { "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Random.nextInt(36)] }.joinToString("")
+                                val newId = "meet_" + Clock.System.now().toEpochMilliseconds() + "_" + randomPart
+                                GroupRepository.addMeetingPoint(org.example.project.model.MeetingPoint(newId, lat, lng, name))
+                            }
+                        },
+                        onDeleteMeetingPoint = { pointId ->
+                            scope.launch {
+                                GroupRepository.removeMeetingPoint(pointId)
+                            }
+                        }
+                    ) 
+                } ?: run {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+            composable("feed") { ActivityFeedScreen(alerts = alerts) }
+            composable("guide") { OfflineGuideScreen() }
+            composable("crisis") { CrisisScreen() }
+            composable("checklist") { ChecklistScreen() }
         }
     }
 }

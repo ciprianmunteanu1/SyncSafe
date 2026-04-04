@@ -123,15 +123,12 @@ object GroupRepository {
 
     /**
      * Creează un grup nou pe Firebase și pornește polling-ul.
-     *
-     * @param groupName Numele grupului.
-     * @param myName    Numele utilizatorului curent.
-     * @return [Result.success] cu obiectul [Group] creat, sau [Result.failure]
-     *         dacă cererea HTTP a eșuat.
      */
-    suspend fun createGroup(groupName: String, myName: String): Result<Group> {
+    suspend fun createGroup(groupName: String): Result<Group> {
         return try {
-            val memberId = generateId()
+            val user = AuthRepository.currentUser ?: return Result.failure(Exception("Not logged in"))
+            val myName = user.username
+            val memberId = user.memberId
             myMemberId = memberId
 
             val me = Member(
@@ -160,8 +157,11 @@ object GroupRepository {
                 memberId = memberId,
                 memberName = myName,
                 type = AlertType.JOINED_GROUP,
-                message = "$myName a creat grupul „$groupName"."
+                message = "$myName a creat grupul \"$groupName\"."
             )
+
+            // Link-ăm utilizatorul de acest grup în contul centralizat
+            AuthRepository.joinCircle(group.inviteCode, group.name)
 
             startPolling(group.inviteCode)
             Result.success(group)
@@ -173,23 +173,14 @@ object GroupRepository {
 
     /**
      * Alătură utilizatorul la un grup existent folosind codul de invitare.
-     *
-     * Procesul:
-     * 1. Caută grupul pe Firebase după cod.
-     * 2. Adaugă utilizatorul ca nou membru.
-     * 3. Scrie grupul actualizat înapoi pe Firebase.
-     * 4. Pornește polling-ul pentru actualizări în timp real.
-     *
-     * **Multi-device**: funcționează între dispozitive diferite —
-     * Device B citește grupul creat de Device A din Firebase.
-     *
-     * @param code   Codul de invitare (6 caractere, case-insensitive).
-     * @param myName Numele utilizatorului curent.
-     * @return [Result.success] cu [Group]-ul găsit, sau [Result.failure]
-     *         dacă codul e invalid sau nu există conexiune.
      */
-    suspend fun joinGroup(code: String, myName: String): Result<Group> {
+    suspend fun joinGroup(code: String): Result<Group> {
         return try {
+            val user = AuthRepository.currentUser ?: return Result.failure(Exception("Not logged in"))
+            val myName = user.username
+            val memberId = user.memberId
+            myMemberId = memberId
+            
             val upperCode = code.uppercase().trim()
 
             // 1. Caută grupul pe Firebase
@@ -201,33 +192,36 @@ object GroupRepository {
             }
 
             val fetchedGroup = json.decodeFromString<Group>(body)
-
-            // 2. Creează membrul curent
-            val memberId = generateId()
-            myMemberId = memberId
             currentInviteCode = fetchedGroup.inviteCode
 
-            val me = Member(
-                id = memberId,
-                name = myName,
-                status = MemberStatus.UNKNOWN,
-                lastUpdatedAt = now()
-            )
-
-            // 3. Adaugă membrul și salvează pe Firebase
-            val updatedGroup = fetchedGroup.copy(members = fetchedGroup.members + me)
-            putGroup(updatedGroup)
+            val alreadyme = fetchedGroup.members.find { it.id == memberId }
+            val updatedGroup = if (alreadyme == null) {
+                // Nu e în grup, îl adăugăm
+                val me = Member(
+                    id = memberId,
+                    name = myName,
+                    status = MemberStatus.UNKNOWN,
+                    lastUpdatedAt = now()
+                )
+                val newGroup = fetchedGroup.copy(members = fetchedGroup.members + me)
+                putGroup(newGroup)
+                
+                pushAlert(
+                    inviteCode = fetchedGroup.inviteCode,
+                    memberId = memberId,
+                    memberName = myName,
+                    type = AlertType.JOINED_GROUP,
+                    message = "$myName s-a alăturat grupului."
+                )
+                newGroup
+            } else {
+                fetchedGroup // E deja în grup, tragem direct datele
+            }
 
             _group.value = updatedGroup
-
-            // 4. Eveniment în feed
-            pushAlert(
-                inviteCode = fetchedGroup.inviteCode,
-                memberId = memberId,
-                memberName = myName,
-                type = AlertType.JOINED_GROUP,
-                message = "$myName s-a alăturat grupului."
-            )
+            
+            // Link-ăm utilizatorul de acest grup în contul centralizat
+            AuthRepository.joinCircle(fetchedGroup.inviteCode, fetchedGroup.name)
 
             startPolling(fetchedGroup.inviteCode)
             Result.success(updatedGroup)
@@ -235,6 +229,39 @@ object GroupRepository {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    /**
+     * Stabilește conexiunea la un grup existent pentru care utilizatorul are deja o identitate creată
+     */
+    suspend fun connectToGroup(inviteCode: String): Result<Group> {
+        return try {
+            val user = AuthRepository.currentUser ?: return Result.failure(Exception("Not logged in"))
+            currentInviteCode = inviteCode
+            myMemberId = user.memberId
+            
+            // Tragem datele proaspete din Firebase
+            refreshGroup(inviteCode)
+            refreshAlerts(inviteCode)
+            
+            val group = _group.value
+            if (group != null && group.members.any { it.id == user.memberId }) {
+                // Dacă grupul încă există, continuăm cu polling
+                startPolling(inviteCode)
+                Result.success(group)
+            } else {
+                // Grupul probabil a fost șters, sau userul a fost kickat
+                Result.failure(Exception("Grupul nu a putut fi coroborat cu Firebase."))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun switchGroup(inviteCode: String): Result<Group> {
+        stopPolling()
+        AuthRepository.setActiveCircle(inviteCode)
+        return connectToGroup(inviteCode)
     }
 
     // ─── Operații pe status ───────────────────────────────────────────────────
@@ -319,15 +346,15 @@ object GroupRepository {
     // ─── Operații pe meeting point ────────────────────────────────────────────
 
     /**
-     * Setează sau actualizează punctul de întâlnire al grupului.
-     * Toți membrii vor vedea noul punct de întâlnire la următorul poll.
+     * Adaugă un punct de întâlnire nou.
      */
-    suspend fun setMeetingPoint(meetingPoint: MeetingPoint) {
+    suspend fun addMeetingPoint(meetingPoint: MeetingPoint) {
         val id = myMemberId ?: return
         val currentGroup = _group.value ?: return
         val name = me?.name ?: return
 
-        val updatedGroup = currentGroup.copy(meetingPoint = meetingPoint)
+        val updatedPoints = currentGroup.meetingPoints + meetingPoint
+        val updatedGroup = currentGroup.copy(meetingPoints = updatedPoints)
         _group.value = updatedGroup
 
         try {
@@ -337,7 +364,32 @@ object GroupRepository {
                 memberId = id,
                 memberName = name,
                 type = AlertType.MEETING_POINT_SET,
-                message = "$name a setat meeting point: „${meetingPoint.name}""
+                message = "$name a adăugat punctul: \"${meetingPoint.name}\""
+            )
+        } catch (e: Exception) { /* continuăm */ }
+    }
+
+    /**
+     * Șterge un punct de întâlnire salvat anterior.
+     */
+    suspend fun removeMeetingPoint(pointId: String) {
+        val id = myMemberId ?: return
+        val currentGroup = _group.value ?: return
+        val name = me?.name ?: return
+
+        val pointToRemove = currentGroup.meetingPoints.find { it.id == pointId } ?: return
+        val updatedPoints = currentGroup.meetingPoints.filterNot { it.id == pointId }
+        val updatedGroup = currentGroup.copy(meetingPoints = updatedPoints)
+        _group.value = updatedGroup
+
+        try {
+            putGroup(updatedGroup)
+            pushAlert(
+                inviteCode = currentGroup.inviteCode,
+                memberId = id,
+                memberName = name,
+                type = AlertType.STATUS_CHANGED, // Sau un AlertType separat daca il doresti
+                message = "$name a șters reperul: \"${pointToRemove.name}\""
             )
         } catch (e: Exception) { /* continuăm */ }
     }
@@ -361,6 +413,11 @@ object GroupRepository {
                 delay(POLL_INTERVAL_MS)
             }
         }
+    }
+
+    private fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
     }
 
     /** Citește grupul din Firebase și actualizează [_group]. */
@@ -397,7 +454,7 @@ object GroupRepository {
         client.put("$BASE_URL/groups/${group.inviteCode}.json") {
             contentType(ContentType.Application.Json)
             setBody(json.encodeToString(Group.serializer(), group))
-        }
+        }.bodyAsText()
     }
 
     /**
@@ -423,7 +480,7 @@ object GroupRepository {
         client.put("$BASE_URL/alerts/$inviteCode/$alertId.json") {
             contentType(ContentType.Application.Json)
             setBody(json.encodeToString(Alert.serializer(), alert))
-        }
+        }.bodyAsText()
 
         // Actualizare optimistă locală pentru UI instant
         _alerts.value = listOf(alert) + _alerts.value

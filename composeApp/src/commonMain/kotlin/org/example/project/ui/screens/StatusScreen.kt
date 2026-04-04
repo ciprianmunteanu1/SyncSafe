@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import org.example.project.model.MemberStatus
 
 @Composable
-fun StatusScreen() {
+fun StatusScreen(
+    onStatusClick: (MemberStatus) -> Unit,
+    onLogoutClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,15 +55,26 @@ fun StatusScreen() {
             columns = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().weight(1f)
         ) {
             val statuses = MemberStatus.values()
             items(statuses) { status ->
                 StatusCard(status = status) {
-                    // TODO: Dispatch update status to viewmodel
+                    onStatusClick(status)
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        OutlinedButton(
+            onClick = onLogoutClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+        ) {
+            Text("Leave Group / Logout", fontWeight = FontWeight.Bold)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

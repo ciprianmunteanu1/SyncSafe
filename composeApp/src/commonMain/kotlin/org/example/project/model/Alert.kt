@@ -1,5 +1,7 @@
 package org.example.project.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Un eveniment din Group Activity Feed.
  *
@@ -13,6 +15,7 @@ package org.example.project.model
  * @param message Mesajul descriptiv afișat în feed (ex: "Ion și-a actualizat statusul: Safe").
  * @param timestamp Momentul evenimentului (milisecunde Unix epoch).
  */
+@Serializable
 data class Alert(
     val id: String,
     val memberId: String,
