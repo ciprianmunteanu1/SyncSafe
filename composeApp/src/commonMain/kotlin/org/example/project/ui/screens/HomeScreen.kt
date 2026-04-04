@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -88,6 +90,8 @@ fun HomeScreen(
         // --- End Swapper ---
 
         if (group != null) {
+            val clipboardManager = LocalClipboardManager.current
+            
             // Header: Nume grup + cod invitare
             Column(
                 modifier = Modifier
@@ -103,7 +107,10 @@ fun HomeScreen(
                 Text(
                     text = "Invite code: ${group.inviteCode} (Tap to copy)",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.clickable {
+                        clipboardManager.setText(AnnotatedString(group.inviteCode))
+                    }
                 )
             }
 
