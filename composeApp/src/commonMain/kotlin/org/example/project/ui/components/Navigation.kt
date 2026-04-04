@@ -204,7 +204,7 @@ fun Navigation() {
             }
             composable("feed") { ActivityFeedScreen(alerts = alerts) }
             composable("guide") { OfflineGuideScreen() }
-            composable("crisis") { CrisisScreen() }
+            composable("crisis") { CrisisScreen(onBack = { navController.popBackStack() }) }
             composable("checklist") { ChecklistScreen() }
         }
     }

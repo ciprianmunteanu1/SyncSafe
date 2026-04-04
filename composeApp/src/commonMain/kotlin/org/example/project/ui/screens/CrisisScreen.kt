@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import org.example.project.ui.components.AlertButton
 
 @Composable
-fun CrisisScreen() {
+fun CrisisScreen(onBack: () -> Unit = {}) {
     val infiniteTransition = rememberInfiniteTransition()
     val bgColor by infiniteTransition.animateColor(
         initialValue = Color(0xFF3E0000), // Dark red
@@ -98,6 +98,15 @@ fun CrisisScreen() {
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.5f))
             ) {
                 Text("📞 Call 112")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            TextButton(
+                onClick = onBack,
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.White.copy(alpha = 0.7f))
+            ) {
+                Text("← Back to Home")
             }
         }
     }

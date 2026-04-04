@@ -1,5 +1,7 @@
 package org.example.project.platform
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
@@ -45,6 +47,7 @@ class IosLocationService : LocationService {
         private val onLocation: (Double, Double) -> Unit
     ) : NSObject(), CLLocationManagerDelegateProtocol {
 
+        @OptIn(ExperimentalForeignApi::class)
         override fun locationManager(
             manager: CLLocationManager,
             didUpdateLocations: List<*>
