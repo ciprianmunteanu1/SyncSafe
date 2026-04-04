@@ -12,8 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
-data class ChecklistItem(val id: String, val category: String, val text: String, var isChecked: Boolean = false)
+import androidx.lifecycle.viewmodel.compose.viewModel
+import org.example.project.viewmodel.ChecklistItem
+import org.example.project.viewmodel.CrisisViewModel
 
 @Composable
 fun ChecklistScreen() {
