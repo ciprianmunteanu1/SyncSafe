@@ -9,12 +9,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.example.project.ui.theme.LocalSyncSafeColors
+import org.example.project.ui.theme.EmergencyRed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,25 +29,22 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
-
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364))
-    )
+    val extra = LocalSyncSafeColors.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Log In", color = Color.White) },
+                title = { Text("Log In", color = extra.authOnGradient) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = extra.authOnGradient)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         },
         containerColor = Color.Transparent,
-        modifier = Modifier.background(gradient)
+        modifier = Modifier.background(extra.authGradient)
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -58,25 +56,25 @@ fun LoginScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                colors = CardDefaults.cardColors(containerColor = extra.authOnGradient.copy(alpha = 0.1f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, extra.authOnGradient.copy(alpha = 0.2f))
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Welcome Back", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Welcome Back", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
-                        label = { Text("Username", color = Color.White.copy(alpha = 0.8f)) },
+                        label = { Text("Username", color = extra.authOnGradientMuted) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFF2196F3), unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            cursorColor = Color(0xFF2196F3)
+                            focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder,
+                            cursorColor = MaterialTheme.colorScheme.primary
                         ),
                         modifier = Modifier.fillMaxWidth(), singleLine = true
                     )
@@ -86,21 +84,19 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Password", color = Color.White.copy(alpha = 0.8f)) },
+                        label = { Text("Password", color = extra.authOnGradientMuted) },
                         visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFF2196F3), unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                            cursorColor = Color(0xFF2196F3)
+                            focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder,
+                            cursorColor = MaterialTheme.colorScheme.primary
                         ),
                         modifier = Modifier.fillMaxWidth(), singleLine = true
                     )
 
-
-
                     if (errorMessage != null) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(errorMessage!!, color = Color(0xFFFF5252), style = MaterialTheme.typography.bodySmall)
+                        Text(errorMessage!!, color = EmergencyRed, style = MaterialTheme.typography.bodySmall)
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
@@ -119,11 +115,11 @@ fun LoginScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(56.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        colors = ButtonDefaults.buttonColors(containerColor = extra.authButtonBackground, contentColor = extra.authButtonForeground),
                         enabled = username.isNotBlank() && password.isNotBlank() && !isLoading
                     ) {
-                        if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                        else Text("Enter Circle", fontWeight = FontWeight.Bold, color = Color.White)
+                        if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = extra.authButtonForeground)
+                        else Text("Enter Circle", fontWeight = FontWeight.Bold)
                     }
                 }
             }

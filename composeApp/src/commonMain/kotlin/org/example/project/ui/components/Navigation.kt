@@ -3,7 +3,6 @@ package org.example.project.ui.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.background
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import org.example.project.data.GroupRepository
 import org.example.project.data.AuthManager
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.CircularProgressIndicator
 import kotlinx.coroutines.launch
@@ -31,7 +29,10 @@ import org.example.project.ui.screens.auth.SelectGroupScreen
 import org.example.project.data.AuthRepository
 
 @Composable
-fun Navigation() {
+fun Navigation(
+    isDarkMode: Boolean = true,
+    onToggleDarkMode: (Boolean) -> Unit = {}
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -42,9 +43,12 @@ fun Navigation() {
 
     val startDestination = "welcome"
 
+    // Routes where bottom nav should be hidden
+    val hideBottomNav = listOf("welcome", "login", "register", "select_group", "crisis")
+
     Scaffold(
         bottomBar = {
-            if (currentRoute !in listOf("welcome", "login", "register", "select_group")) {
+            if (currentRoute !in hideBottomNav) {
                 BottomNavBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
@@ -154,9 +158,9 @@ fun Navigation() {
             composable("home") { 
                 HomeScreen(
                     group = group,
-                    joinedGroups = org.example.project.data.AuthRepository.currentUser?.joinedGroups ?: emptyMap(),
+                    joinedGroups = AuthRepository.currentUser?.joinedGroups ?: emptyMap(),
                     onSwitchGroup = { inviteCode ->
-                        scope.launch { org.example.project.data.GroupRepository.switchGroup(inviteCode) }
+                        scope.launch { GroupRepository.switchGroup(inviteCode) }
                     },
                     onCreateOrJoin = { navController.navigate("select_group") },
                     onSafeClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) } },
@@ -206,6 +210,20 @@ fun Navigation() {
             composable("guide") { OfflineGuideScreen() }
             composable("crisis") { CrisisScreen(onBack = { navController.popBackStack() }) }
             composable("checklist") { ChecklistScreen() }
+            composable("settings") {
+                SettingsScreen(
+                    isDarkMode = isDarkMode,
+                    onToggleDarkMode = onToggleDarkMode,
+                    onBack = { navController.popBackStack() },
+                    onLogout = {
+                        AuthManager.clearSession()
+                        AuthRepository.logout()
+                        navController.navigate("welcome") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }

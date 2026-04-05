@@ -1,11 +1,11 @@
 package org.example.project.ui.components
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,10 +21,10 @@ data class BottomNavItem(
 
 val bottomNavItems = listOf(
     BottomNavItem("Home", "home", Icons.Default.Home),
-    BottomNavItem("Status", "status", Icons.Default.Person),
     BottomNavItem("Map", "map", Icons.Default.LocationOn),
-    BottomNavItem("Feed", "feed", Icons.Default.List),
-    BottomNavItem("Guide", "guide", Icons.Default.Info)
+    BottomNavItem("Feed", "feed", Icons.AutoMirrored.Filled.List),
+    BottomNavItem("Guide", "guide", Icons.Default.Info),
+    BottomNavItem("Settings", "settings", Icons.Default.Settings)
 )
 
 @Composable

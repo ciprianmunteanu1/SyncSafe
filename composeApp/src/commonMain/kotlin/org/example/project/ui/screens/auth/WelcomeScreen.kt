@@ -1,6 +1,5 @@
 package org.example.project.ui.screens.auth
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -18,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import org.example.project.data.AuthManager
 import org.example.project.data.AuthRepository
 import org.example.project.data.GroupRepository
+import org.example.project.ui.theme.LocalSyncSafeColors
 import kotlinx.coroutines.launch
 
 @Composable
@@ -26,9 +25,7 @@ fun WelcomeScreen(
     onNavigateToLogin: () -> Unit,
     onAutoLoginSuccess: (String) -> Unit
 ) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364))
-    )
+    val extra = LocalSyncSafeColors.current
 
     var isSilentLoggingIn by remember { mutableStateOf(false) }
 
@@ -54,7 +51,7 @@ fun WelcomeScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(gradient),
+        modifier = Modifier.fillMaxSize().background(extra.authGradient),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -63,28 +60,28 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Box(
-                modifier = Modifier.size(100.dp).background(Color.White.copy(alpha = 0.1f), CircleShape),
+                modifier = Modifier.size(100.dp).background(extra.authOnGradient.copy(alpha = 0.1f), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.Warning, contentDescription = "Logo", modifier = Modifier.size(50.dp), tint = Color.White)
+                Icon(Icons.Filled.Warning, contentDescription = "Logo", modifier = Modifier.size(50.dp), tint = extra.authOnGradient)
             }
             Spacer(modifier = Modifier.height(32.dp))
-            Text("SyncSafe", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("SyncSafe", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Conectare inteligentă.", style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.8f), textAlign = TextAlign.Center)
+            Text("Conectare inteligentă.", style = MaterialTheme.typography.titleMedium, color = extra.authOnGradientMuted, textAlign = TextAlign.Center)
             
             Spacer(modifier = Modifier.height(48.dp))
 
             if (isSilentLoggingIn) {
-                CircularProgressIndicator(color = Color.White)
+                CircularProgressIndicator(color = extra.authOnGradient)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Se restabilește sesiunea...", color = Color.White.copy(alpha = 0.7f))
+                Text("Se restabilește sesiunea...", color = extra.authOnGradientMuted)
             } else {
                 Button(
                     onClick = onNavigateToLogin,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = MaterialTheme.shapes.large,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF0F2027))
+                    colors = ButtonDefaults.buttonColors(containerColor = extra.authButtonBackground, contentColor = extra.authButtonForeground)
                 ) { Text("Log In", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -93,8 +90,8 @@ fun WelcomeScreen(
                     onClick = onNavigateToCreate,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = MaterialTheme.shapes.large,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = extra.authOnGradient),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, extra.authOnGradient.copy(alpha = 0.5f))
                 ) { Text("Create Account", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
             }
         }

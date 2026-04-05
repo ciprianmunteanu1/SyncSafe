@@ -7,11 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.example.project.ui.theme.LocalSyncSafeColors
+import org.example.project.ui.theme.EmergencyRed
 
 @Composable
 fun SelectGroupScreen(
@@ -21,16 +21,10 @@ fun SelectGroupScreen(
 ) {
     var groupName by remember { mutableStateOf("") }
     var inviteCode by remember { mutableStateOf("") }
-    
-    // Simplificăm prin a oferi două card-uri pe același ecran (cum era la MVP),
-    // Dar acum e un ecran protejat (doar pentru cei logați dar fără grup).
-    
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364))
-    )
+    val extra = LocalSyncSafeColors.current
 
     Box(
-        modifier = Modifier.fillMaxSize().background(gradient)
+        modifier = Modifier.fillMaxSize().background(extra.authGradient)
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp).systemBarsPadding(),
@@ -40,10 +34,10 @@ fun SelectGroupScreen(
                 Text(
                     "You're Logged In!",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = extra.authOnGradient
                 )
                 TextButton(onClick = onLogout) {
-                    Text("Log Out", color = Color(0xFFFF5252))
+                    Text("Log Out", color = EmergencyRed)
                 }
             }
             
@@ -52,7 +46,7 @@ fun SelectGroupScreen(
             Text(
                 "You are not part of any Circle.",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color.White,
+                color = extra.authOnGradient,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
@@ -63,19 +57,19 @@ fun SelectGroupScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                colors = CardDefaults.cardColors(containerColor = extra.authOnGradient.copy(alpha = 0.1f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, extra.authOnGradient.copy(alpha = 0.2f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Create a Circle", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Create a Circle", fontWeight = FontWeight.Bold, color = extra.authOnGradient)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = groupName,
                         onValueChange = { groupName = it },
-                        label = { Text("Circle Name", color = Color.White.copy(alpha = 0.6f)) },
+                        label = { Text("Circle Name", color = extra.authOnGradientMuted) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFF2196F3), unfocusedBorderColor = Color.White.copy(0.3f)
+                            focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder
                         ),
                         modifier = Modifier.fillMaxWidth(), singleLine = true
                     )
@@ -83,9 +77,9 @@ fun SelectGroupScreen(
                     Button(
                         onClick = { onCreateGroup(groupName) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        colors = ButtonDefaults.buttonColors(containerColor = extra.authButtonBackground, contentColor = extra.authButtonForeground),
                         enabled = groupName.isNotBlank()
-                    ) { Text("Create", color = Color.White) }
+                    ) { Text("Create") }
                 }
             }
             
@@ -95,19 +89,19 @@ fun SelectGroupScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                colors = CardDefaults.cardColors(containerColor = extra.authOnGradient.copy(alpha = 0.1f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, extra.authOnGradient.copy(alpha = 0.2f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Join a Circle", fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Join a Circle", fontWeight = FontWeight.Bold, color = extra.authOnGradient)
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = inviteCode,
                         onValueChange = { inviteCode = it.uppercase() },
-                        label = { Text("Invite Code", color = Color.White.copy(alpha = 0.6f)) },
+                        label = { Text("Invite Code", color = extra.authOnGradientMuted) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White, unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFF2196F3), unfocusedBorderColor = Color.White.copy(0.3f)
+                            focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder
                         ),
                         modifier = Modifier.fillMaxWidth(), singleLine = true
                     )
@@ -115,9 +109,9 @@ fun SelectGroupScreen(
                     Button(
                         onClick = { onJoinGroup(inviteCode) },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        colors = ButtonDefaults.buttonColors(containerColor = extra.authButtonBackground, contentColor = extra.authButtonForeground),
                         enabled = inviteCode.isNotBlank()
-                    ) { Text("Join", color = Color.White) }
+                    ) { Text("Join") }
                 }
             }
         }
