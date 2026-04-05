@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import org.example.project.ui.components.AlertButton
 
 @Composable
-fun CrisisScreen(onBack: () -> Unit = {}) {
+fun CrisisScreen(onBack: () -> Unit = {}, onSafeClick: () -> Unit = {}) {
     val infiniteTransition = rememberInfiniteTransition()
     val bgColor by infiniteTransition.animateColor(
         initialValue = Color(0xFF3E0000), // Dark red
@@ -57,7 +57,7 @@ fun CrisisScreen(onBack: () -> Unit = {}) {
                 text = "I'M SAFE",
                 icon = "✅",
                 color = Color(0xFF4CAF50), // Green
-                onClick = { /* TODO: Update status to SAFE */ }
+                onClick = onSafeClick
             )
 
             Spacer(modifier = Modifier.height(24.dp))

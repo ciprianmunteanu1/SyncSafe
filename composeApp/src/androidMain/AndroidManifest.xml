@@ -7,7 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Locație aproximativă (fallback) -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
+    <!-- Alarma SOS -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

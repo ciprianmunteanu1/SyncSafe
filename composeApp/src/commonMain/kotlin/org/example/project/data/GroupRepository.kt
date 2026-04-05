@@ -281,17 +281,19 @@ object GroupRepository {
         val currentGroup = _group.value ?: return
         val name = me?.name ?: return
 
+        val myIndex = currentGroup.members.indexOfFirst { it.id == id }
+        if (myIndex == -1) return
+
         // 1. Actualizare optimistă locală (UI răspunde instant)
-        val updatedMembers = currentGroup.members.map { member ->
-            if (member.id == id) member.copy(status = newStatus, lastUpdatedAt = now())
-            else member
-        }
+        val updatedMe = currentGroup.members[myIndex].copy(status = newStatus, lastUpdatedAt = now())
+        val updatedMembers = currentGroup.members.toMutableList()
+        updatedMembers[myIndex] = updatedMe
         val updatedGroup = currentGroup.copy(members = updatedMembers)
         _group.value = updatedGroup
 
         // 2. Persistare pe Firebase (ceilalți vor vedea la poll)
         try {
-            putGroup(updatedGroup)
+            putMember(currentGroup.inviteCode, myIndex, updatedMe)
 
             val alertType = when (newStatus) {
                 MemberStatus.SAFE       -> AlertType.WENT_SAFE
@@ -323,16 +325,17 @@ object GroupRepository {
         val currentGroup = _group.value ?: return
         val name = me?.name ?: return
 
-        val updatedMembers = currentGroup.members.map { member ->
-            if (member.id == id) {
-                member.copy(latitude = latitude, longitude = longitude, lastUpdatedAt = now())
-            } else member
-        }
+        val myIndex = currentGroup.members.indexOfFirst { it.id == id }
+        if (myIndex == -1) return
+
+        val updatedMe = currentGroup.members[myIndex].copy(latitude = latitude, longitude = longitude, lastUpdatedAt = now())
+        val updatedMembers = currentGroup.members.toMutableList()
+        updatedMembers[myIndex] = updatedMe
         val updatedGroup = currentGroup.copy(members = updatedMembers)
         _group.value = updatedGroup
 
         try {
-            putGroup(updatedGroup)
+            putMember(currentGroup.inviteCode, myIndex, updatedMe)
             pushAlert(
                 inviteCode = currentGroup.inviteCode,
                 memberId = id,
@@ -449,7 +452,18 @@ object GroupRepository {
 
     // ─── HTTP helpers ─────────────────────────────────────────────────────────
 
-    /** Scrie grupul complet la `/groups/{inviteCode}.json` (PUT = suprascrie). */
+    /**
+     * Scrie doar un anumit membru la `/groups/{inviteCode}/members/{index}.json`.
+     * Previne suprascrierea datelor generate de un alt membru în același timp.
+     */
+    private suspend fun putMember(inviteCode: String, memberIndex: Int, member: Member) {
+        client.put("$BASE_URL/groups/$inviteCode/members/$memberIndex.json") {
+            contentType(ContentType.Application.Json)
+            setBody(json.encodeToString(Member.serializer(), member))
+        }
+    }
+
+    /** Scrie descrierea completă a grupului (folosit la join, puncte întâlnire etc). */
     private suspend fun putGroup(group: Group) {
         client.put("$BASE_URL/groups/${group.inviteCode}.json") {
             contentType(ContentType.Application.Json)

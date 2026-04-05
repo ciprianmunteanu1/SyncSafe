@@ -19,6 +19,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         
+        org.example.project.platform.appContext = this.applicationContext
+        
         // Configurare cerere de permisiuni GPS și pornire automată serviciu de background
         val locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()

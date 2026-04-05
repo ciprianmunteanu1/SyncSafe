@@ -169,6 +169,15 @@ fun Navigation(
                     onCrisisModeClick = { navController.navigate("crisis") }
                 ) 
             }
+            composable("crisis") {
+                CrisisScreen(
+                    onBack = { navController.popBackStack() },
+                    onSafeClick = {
+                        scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) }
+                        navController.popBackStack("home", inclusive = false)
+                    }
+                )
+            }
             composable("status") { 
                 StatusScreen(
                     onStatusClick = { status -> 
