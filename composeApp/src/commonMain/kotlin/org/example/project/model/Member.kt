@@ -1,5 +1,7 @@
 package org.example.project.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Reprezintă un membru al grupului de siguranță.
  *
@@ -10,6 +12,7 @@ package org.example.project.model
  * @param longitude Longitudinea GPS curentă. Null dacă locația nu a fost partajată.
  * @param lastUpdatedAt Timestamp-ul ultimei actualizări (milisecunde Unix epoch).
  */
+@Serializable
 data class Member(
     val id: String,
     val name: String,

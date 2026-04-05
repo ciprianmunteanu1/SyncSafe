@@ -7,6 +7,8 @@ import kotlinx.coroutines.launch
 import org.example.project.data.GroupRepository
 import org.example.project.model.MeetingPoint
 import org.example.project.platform.LocationService
+import kotlin.random.Random
+import kotlin.time.Clock
 
 /**
  * ViewModel pentru hartă, locație și meeting point.
@@ -72,11 +74,13 @@ class MapViewModel : ViewModel() {
      * @param longitude Longitudinea punctului (grade zecimale).
      * @param name      Denumire descriptivă (ex: "Intrarea Parcului Central").
      */
-    fun setMeetingPoint(latitude: Double, longitude: Double, name: String) {
+    fun addMeetingPoint(latitude: Double, longitude: Double, name: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            GroupRepository.setMeetingPoint(
-                MeetingPoint(latitude = latitude, longitude = longitude, name = name)
+            val randomPart = (1..6).map { "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Random.nextInt(36)] }.joinToString("")
+            val newId = "meet_" + Clock.System.now().toEpochMilliseconds() + "_" + randomPart
+            GroupRepository.addMeetingPoint(
+                MeetingPoint(id = newId, latitude = latitude, longitude = longitude, name = name)
             )
         }
     }

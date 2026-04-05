@@ -35,11 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.data.EmergencyGuide
 import org.example.project.data.OfflineGuide
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 
 @Composable
 fun OfflineGuideScreen() {
+    val s = stringsFor(LocalAppLanguage.current)
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val guides = OfflineGuide.allGuides
+    val guides = OfflineGuide.allGuides(LocalAppLanguage.current)
 
     Column(
         modifier = Modifier
@@ -54,7 +57,7 @@ fun OfflineGuideScreen() {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Offline Emergency Guide",
+                text = s.offlineGuideTitle,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground

@@ -1,5 +1,7 @@
 package org.example.project.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Reprezintă un grup de siguranță.
  *
@@ -7,14 +9,15 @@ package org.example.project.model
  * @param name Numele ales de creatorul grupului.
  * @param inviteCode Codul scurt de 6 caractere pentru aderare (ex: "A3K9PZ").
  * @param members Lista membrilor activi ai grupului.
- * @param meetingPoint Punctul de întâlnire stabilit, sau null dacă nu a fost setat.
+ * @param meetingPoints Lista punctelor de întâlnire stabilite.
  */
+@Serializable
 data class Group(
     val id: String,
     val name: String,
     val inviteCode: String,
     val members: List<Member> = emptyList(),
-    val meetingPoint: MeetingPoint? = null
+    val meetingPoints: List<MeetingPoint> = emptyList()
 ) {
     /**
      * Numărul membrilor cu statusul [MemberStatus.SAFE].

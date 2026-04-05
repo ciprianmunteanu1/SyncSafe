@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.model.MemberStatus
 import org.example.project.ui.theme.EmergencyRed
 import org.example.project.ui.theme.OnTheWayBlue
@@ -19,11 +21,18 @@ import org.example.project.ui.theme.UnknownOrange
 
 @Composable
 fun StatusBadge(status: MemberStatus, modifier: Modifier = Modifier) {
+    val s = stringsFor(LocalAppLanguage.current)
     val backgroundColor = when (status) {
         MemberStatus.SAFE -> SafeGreen
         MemberStatus.NEEDS_HELP -> EmergencyRed
         MemberStatus.UNKNOWN -> UnknownOrange
         MemberStatus.ON_THE_WAY -> OnTheWayBlue
+    }
+    val localizedLabel = when (status) {
+        MemberStatus.SAFE -> s.statusSafe
+        MemberStatus.UNKNOWN -> s.statusUnknown
+        MemberStatus.NEEDS_HELP -> s.statusNeedsHelp
+        MemberStatus.ON_THE_WAY -> s.statusOnMyWay
     }
 
     Box(
@@ -33,7 +42,7 @@ fun StatusBadge(status: MemberStatus, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "${status.emoji} ${status.label}",
+            text = "${status.emoji} $localizedLabel",
             color = Color.White,
             style = MaterialTheme.typography.labelMedium
         )

@@ -1,11 +1,14 @@
 package org.example.project.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Tipul evenimentului înregistrat în Group Activity Feed.
  *
  * Folosit pentru a diferenția vizual evenimentele în feed
  * (culori, icoane, mesaje diferite per tip).
  */
+@Serializable
 enum class AlertType {
     /** Membrul și-a setat statusul pe SAFE. */
     WENT_SAFE,

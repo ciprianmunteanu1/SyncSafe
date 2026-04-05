@@ -1,5 +1,8 @@
 package org.example.project.data
 
+import org.example.project.i18n.AppLanguage
+import org.example.project.i18n.stringsFor
+
 data class GuideStep(
     val id: Int,
     val title: String,
@@ -14,53 +17,57 @@ data class EmergencyGuide(
 )
 
 object OfflineGuide {
-    val earthquakeGuide = EmergencyGuide(
-        id = "earthquake",
-        title = "Earthquake",
-        icon = "🏚️",
-        steps = listOf(
-            GuideStep(1, "Take Cover", "Drop under a sturdy table or desk and hold on to its leg."),
-            GuideStep(2, "Protect Yourself", "Cover your head and neck with your arms."),
-            GuideStep(3, "Stay Away", "Keep away from windows, mirrors, bookcases, and tall furniture that could fall."),
-            GuideStep(4, "Stay Inside", "Do not try to exit the building during the earthquake. Wait until the shaking stops.")
-        )
-    )
 
-    val fireGuide = EmergencyGuide(
-        id = "fire",
-        title = "Fire",
-        icon = "🔥",
-        steps = listOf(
-            GuideStep(1, "Raise Alarm", "Shout \"Fire!\" to alert people nearby and trigger the fire alarm."),
-            GuideStep(2, "Evacuate Immediately", "Leave the building using the nearest stairs. Do not use the elevator!"),
-            GuideStep(3, "Heavy Smoke", "If there is a lot of smoke, crawl low to the floor where the air is cleaner."),
-            GuideStep(4, "Check Doors", "If a door is hot, do not open it. Find an alternative route.")
+    fun allGuides(language: AppLanguage): List<EmergencyGuide> {
+        val s = stringsFor(language)
+        return listOf(
+            EmergencyGuide(
+                id = "earthquake",
+                title = s.guideEarthquake,
+                icon = "🏚️",
+                steps = listOf(
+                    GuideStep(1, s.eqStep1Title, s.eqStep1Desc),
+                    GuideStep(2, s.eqStep2Title, s.eqStep2Desc),
+                    GuideStep(3, s.eqStep3Title, s.eqStep3Desc),
+                    GuideStep(4, s.eqStep4Title, s.eqStep4Desc)
+                )
+            ),
+            EmergencyGuide(
+                id = "fire",
+                title = s.guideFire,
+                icon = "🔥",
+                steps = listOf(
+                    GuideStep(1, s.fireStep1Title, s.fireStep1Desc),
+                    GuideStep(2, s.fireStep2Title, s.fireStep2Desc),
+                    GuideStep(3, s.fireStep3Title, s.fireStep3Desc),
+                    GuideStep(4, s.fireStep4Title, s.fireStep4Desc)
+                )
+            ),
+            EmergencyGuide(
+                id = "evacuation",
+                title = s.guideEvacuation,
+                icon = "🚪",
+                steps = listOf(
+                    GuideStep(1, s.evacStep1Title, s.evacStep1Desc),
+                    GuideStep(2, s.evacStep2Title, s.evacStep2Desc),
+                    GuideStep(3, s.evacStep3Title, s.evacStep3Desc),
+                    GuideStep(4, s.evacStep4Title, s.evacStep4Desc)
+                )
+            ),
+            EmergencyGuide(
+                id = "first_aid",
+                title = s.guideFirstAid,
+                icon = "🩺",
+                steps = listOf(
+                    GuideStep(1, s.faStep1Title, s.faStep1Desc),
+                    GuideStep(2, s.faStep2Title, s.faStep2Desc),
+                    GuideStep(3, s.faStep3Title, s.faStep3Desc),
+                    GuideStep(4, s.faStep4Title, s.faStep4Desc)
+                )
+            )
         )
-    )
+    }
 
-    val evacuationGuide = EmergencyGuide(
-        id = "evacuation",
-        title = "Evacuation",
-        icon = "🚪",
-        steps = listOf(
-            GuideStep(1, "Stay Calm", "Do not panic. Follow the instructions of the designated personnel."),
-            GuideStep(2, "Follow Signs", "Follow the green emergency exit signs out of the building."),
-            GuideStep(3, "Leave Items", "Do not go back for personal belongings."),
-            GuideStep(4, "Assembly Point", "Go to the designated Meeting Point and report your presence.")
-        )
-    )
-
-    val firstAidGuide = EmergencyGuide(
-        id = "first_aid",
-        title = "First Aid",
-        icon = "🩺",
-        steps = listOf(
-            GuideStep(1, "Assess Safety", "Ensure the area is safe before taking action."),
-            GuideStep(2, "Check Condition", "Check if the victim is conscious and breathing."),
-            GuideStep(3, "Call Emergency", "Call the 112 emergency number immediately if the situation is serious."),
-            GuideStep(4, "Stop Bleeding", "Apply firm pressure with a clean cloth to any heavily bleeding wound.")
-        )
-    )
-
-    val allGuides = listOf(earthquakeGuide, fireGuide, evacuationGuide, firstAidGuide)
+    // Keep backward-compatible property for any code that still uses it
+    val allGuides: List<EmergencyGuide> get() = allGuides(AppLanguage.EN)
 }
