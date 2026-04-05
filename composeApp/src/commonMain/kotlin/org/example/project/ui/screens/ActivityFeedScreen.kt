@@ -64,50 +64,86 @@ fun ActivityFeedScreen(alerts: List<Alert>) {
 
 @Composable
 fun AlertItemRow(alert: Alert) {
-    val (icon, color) = when (alert.type) {
-        AlertType.WENT_SAFE -> "✅" to Color(0xFF4CAF50)
-        AlertType.NEEDS_HELP -> "🆘" to Color(0xFFF44336)
-        AlertType.STATUS_CHANGED -> "🔄" to Color(0xFF9E9E9E)
-        AlertType.LOCATION_UPDATED -> "📍" to Color(0xFF2196F3)
-        AlertType.MEETING_POINT_SET -> "🎯" to Color(0xFFFF9800)
-        AlertType.JOINED_GROUP -> "👋" to Color(0xFF9C27B0)
-    }
+    val isMajorEmergency = alert.type == AlertType.NEEDS_HELP && alert.message.contains("URGENȚĂ:")
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+    if (isMajorEmergency) {
+        // ─── BANNER URGENȚĂ MAJORĂ ───
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF8B0000)),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = icon, style = MaterialTheme.typography.titleMedium)
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "🚨", style = MaterialTheme.typography.headlineMedium)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "URGENȚĂ MAJORĂ!",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = alert.message,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = if (alert.type == AlertType.NEEDS_HELP) FontWeight.Bold else FontWeight.Normal
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // Exact relative time representation
                 Text(
                     text = formatRelativeTime(alert.timestamp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.7f)
                 )
+            }
+        }
+    } else {
+        val (icon, color) = when (alert.type) {
+            AlertType.WENT_SAFE -> "✅" to Color(0xFF4CAF50)
+            AlertType.NEEDS_HELP -> "🆘" to Color(0xFFF44336)
+            AlertType.STATUS_CHANGED -> "🔄" to Color(0xFF9E9E9E)
+            AlertType.LOCATION_UPDATED -> "📍" to Color(0xFF2196F3)
+            AlertType.MEETING_POINT_SET -> "🎯" to Color(0xFFFF9800)
+            AlertType.JOINED_GROUP -> "👋" to Color(0xFF9C27B0)
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(color.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = icon, style = MaterialTheme.typography.titleMedium)
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = alert.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = if (alert.type == AlertType.NEEDS_HELP) FontWeight.Bold else FontWeight.Normal
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatRelativeTime(alert.timestamp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

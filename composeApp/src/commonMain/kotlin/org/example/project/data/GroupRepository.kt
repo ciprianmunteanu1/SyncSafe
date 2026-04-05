@@ -276,7 +276,7 @@ object GroupRepository {
      *
      * @param newStatus Noul status ales de utilizator.
      */
-    suspend fun updateMyStatus(newStatus: MemberStatus) {
+    suspend fun updateMyStatus(newStatus: MemberStatus, dangerType: String? = null) {
         val id = myMemberId ?: return
         val currentGroup = _group.value ?: return
         val name = me?.name ?: return
@@ -301,12 +301,20 @@ object GroupRepository {
                 else                    -> AlertType.STATUS_CHANGED
             }
 
+            val finalMessage = if (newStatus == MemberStatus.NEEDS_HELP && dangerType != null) {
+                "$name raportează URGENȚĂ: $dangerType!"
+            } else if (newStatus == MemberStatus.SAFE) {
+                "$name este în siguranță! ✅"
+            } else {
+                "$name: ${newStatus.emoji} ${newStatus.label}"
+            }
+
             pushAlert(
                 inviteCode = currentGroup.inviteCode,
                 memberId = id,
                 memberName = name,
                 type = alertType,
-                message = "$name: ${newStatus.emoji} ${newStatus.label}"
+                message = finalMessage
             )
         } catch (e: Exception) {
             // Eroare de rețea — starea locală rămâne actualizată,

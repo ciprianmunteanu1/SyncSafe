@@ -43,17 +43,13 @@ fun HomeScreen(
     onOnMyWayClick: () -> Unit,
     onCrisisModeClick: () -> Unit
 ) {
-    var showCrisisDialog by remember { mutableStateOf(false) }
-    var selectedCrisisType by remember { mutableStateOf("Incendiu") }
-    val crisisOptions = listOf("Incendiu", "Cutremur", "Bombă", "Inundație")
-
     Column(modifier = Modifier.fillMaxSize()) {
         // CRISIS MODE BANNER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(EmergencyRed)
-                .clickable { showCrisisDialog = true }
+                .clickable(onClick = onCrisisModeClick)
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -186,62 +182,5 @@ fun HomeScreen(
                 }
             }
         }
-    }
-
-    if (showCrisisDialog) {
-        AlertDialog(
-            onDismissRequest = { showCrisisDialog = false },
-            title = { Text("Confirmă Urgența") },
-            text = {
-                Column {
-                    Text("Ești sigur că este o urgență? Te rugăm să selectezi tipul:")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(Modifier.selectableGroup()) {
-                        crisisOptions.forEach { text ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(46.dp)
-                                    .selectable(
-                                        selected = (text == selectedCrisisType),
-                                        onClick = { selectedCrisisType = text },
-                                        role = Role.RadioButton
-                                    )
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = (text == selectedCrisisType),
-                                    onClick = null 
-                                )
-                                Text(
-                                    text = text,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showCrisisDialog = false
-                        // TODO: În viitor, putem transmite `selectedCrisisType` către onCrisisModeClick
-                        onCrisisModeClick()
-                    }
-                ) {
-                    Text("Confirmă", color = EmergencyRed, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showCrisisDialog = false }
-                ) {
-                    Text("Anulează")
-                }
-            }
-        )
     }
 }

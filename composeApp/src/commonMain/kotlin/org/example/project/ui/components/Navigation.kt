@@ -7,8 +7,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -42,6 +53,30 @@ fun Navigation(
     val alerts by GroupRepository.alerts.collectAsState()
 
     val startDestination = "welcome"
+    var currentCrisisType by remember { mutableStateOf<String?>(null) }
+
+    // GLOBAL SOS STATE
+    var incomingSosAlert by remember { mutableStateOf<org.example.project.model.Alert?>(null) }
+    var lastAlertTimestamp by remember { mutableStateOf(kotlin.time.Clock.System.now().toEpochMilliseconds()) }
+
+    LaunchedEffect(alerts) {
+        val myMemberId = org.example.project.data.GroupRepository.me?.id
+        val newAlerts = alerts.filter { it.timestamp > lastAlertTimestamp }
+
+        if (newAlerts.isNotEmpty()) {
+            lastAlertTimestamp = newAlerts.maxOf { it.timestamp }
+
+            // Orice NEEDS_HELP de la altcineva din grup declanseaza popup + hardware
+            val latestSos = newAlerts.lastOrNull { alert ->
+                alert.type == org.example.project.model.AlertType.NEEDS_HELP &&
+                alert.memberId != myMemberId
+            }
+            if (latestSos != null) {
+                incomingSosAlert = latestSos
+                org.example.project.platform.EmergencyHardware().triggerSOSAlarm()
+            }
+        }
+    }
 
     // Routes where bottom nav should be hidden
     val hideBottomNav = listOf("welcome", "login", "register", "select_group", "crisis")
@@ -166,15 +201,25 @@ fun Navigation(
                     onSafeClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) } },
                     onNeedHelpClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.NEEDS_HELP) } },
                     onOnMyWayClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.ON_THE_WAY) } },
-                    onCrisisModeClick = { navController.navigate("crisis") }
+                    onCrisisModeClick = { 
+                        navController.navigate("crisis") 
+                    }
                 ) 
             }
             composable("crisis") {
                 CrisisScreen(
+                    crisisType = currentCrisisType,
                     onBack = { navController.popBackStack() },
                     onSafeClick = {
                         scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) }
-                        navController.popBackStack("home", inclusive = false)
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    },
+                    onNeedHelpClick = { type ->
+                        currentCrisisType = type
+                        scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.NEEDS_HELP, type) }
+                        // Hardware-ul se declanșează prin LaunchedEffect când Firebase confirmă alerta
                     }
                 )
             }
@@ -218,7 +263,6 @@ fun Navigation(
             }
             composable("feed") { ActivityFeedScreen(alerts = alerts) }
             composable("guide") { OfflineGuideScreen() }
-            composable("crisis") { CrisisScreen(onBack = { navController.popBackStack() }) }
             composable("checklist") { ChecklistScreen() }
             composable("settings") {
                 SettingsScreen(
@@ -235,6 +279,62 @@ fun Navigation(
                 )
             }
         }
+    }
+
+    if (incomingSosAlert != null) {
+        val alert = incomingSosAlert!!
+        val isCrisisMode = alert.message.contains("URGENȚĂ:")
+        val crisisType = if (isCrisisMode) alert.message.substringAfter("URGENȚĂ:").removeSuffix("!").trim() else null
+
+        AlertDialog(
+            onDismissRequest = { /* Nu se inchide prin click exterior */ },
+            containerColor = androidx.compose.ui.graphics.Color(0xFF8B0000),
+            titleContentColor = androidx.compose.ui.graphics.Color.White,
+            textContentColor = androidx.compose.ui.graphics.Color.White,
+            title = { Text("🚨 URGENȚĂ!", fontWeight = FontWeight.ExtraBold) },
+            text = {
+                androidx.compose.foundation.layout.Column {
+                    Text(
+                        text = "${alert.memberName} are o urgență!",
+                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = androidx.compose.ui.graphics.Color.White
+                    )
+                    if (crisisType != null) {
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Tip urgență: $crisisType",
+                            style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
+                            color = androidx.compose.ui.graphics.Color.White
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        incomingSosAlert = null
+                        navController.navigate("map") {
+                            popUpTo(navController.graph.startDestinationRoute ?: "welcome") { inclusive = false }
+                        }
+                    },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = androidx.compose.ui.graphics.Color.Black
+                    )
+                ) {
+                    Text("📍 VĂD PE HARTĂ", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { incomingSosAlert = null },
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.7f))
+                ) {
+                    Text("Am înțeles", fontWeight = FontWeight.Bold)
+                }
+            }
+        )
     }
 }
 
