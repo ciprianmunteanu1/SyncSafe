@@ -18,6 +18,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.Role
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.ui.components.AlertButton
 
 @Composable
@@ -27,10 +29,17 @@ fun CrisisScreen(
     onSafeClick: () -> Unit = {},
     onNeedHelpClick: (String) -> Unit = {}
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
+
     var showChecklist by remember { mutableStateOf(false) }
     var showCrisisDialog by remember { mutableStateOf(false) }
-    var selectedCrisisType by remember { mutableStateOf("Fire") }
-    val crisisOptions = listOf("Fire", "Earthquake", "Military Risk", "Flood")
+    var selectedCrisisType by remember { mutableStateOf(s.fire) }
+
+    // Crisis options use internal keys for Firebase, display uses localized names
+    val crisisKeys = listOf("Fire", "Earthquake", "Military Risk", "Flood")
+    val crisisLabels = listOf(s.fire, s.earthquake, s.militaryRisk, s.flood)
+    var selectedCrisisIndex by remember { mutableStateOf(0) }
+
     val uriHandler = LocalUriHandler.current
 
     val infiniteTransition = rememberInfiniteTransition()
@@ -55,7 +64,7 @@ fun CrisisScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "CRISIS MODE",
+                text = s.crisisMode,
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White
@@ -64,7 +73,7 @@ fun CrisisScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Are you safe?",
+                text = s.areYouSafe,
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -72,7 +81,7 @@ fun CrisisScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             AlertButton(
-                text = "I'M SAFE",
+                text = s.imSafe,
                 icon = "✅",
                 color = Color(0xFF4CAF50),
                 onClick = onSafeClick
@@ -81,7 +90,7 @@ fun CrisisScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             AlertButton(
-                text = "EMERGENCY",
+                text = s.emergency,
                 icon = "🆘",
                 color = Color(0xFFF44336),
                 pulse = true,
@@ -98,7 +107,7 @@ fun CrisisScreen(
                     onClick = { showChecklist = true },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    Text("📋 Checklist")
+                    Text(s.checklist)
                 }
 
                 OutlinedButton(
@@ -108,7 +117,7 @@ fun CrisisScreen(
                     },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    val label = if (crisisType == "Military Risk") "🛡️ Bunkers" else "🏥 Hospitals"
+                    val label = if (crisisType == "Military Risk") s.bunkers else s.hospitals
                     Text(label)
                 }
             }
@@ -119,7 +128,7 @@ fun CrisisScreen(
                 onClick = { /* TODO: Call emergency */ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Black.copy(alpha = 0.5f))
             ) {
-                Text("📞 Call 112")
+                Text(s.call112)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -128,7 +137,7 @@ fun CrisisScreen(
                 onClick = onBack,
                 colors = ButtonDefaults.textButtonColors(contentColor = Color.White.copy(alpha = 0.7f))
             ) {
-                Text("← Back to Home")
+                Text(s.backToHome)
             }
         }
 
@@ -137,31 +146,31 @@ fun CrisisScreen(
         if (showCrisisDialog) {
             AlertDialog(
                 onDismissRequest = { showCrisisDialog = false },
-                title = { Text("🚨 Confirm Emergency") },
+                title = { Text(s.confirmEmergency) },
                 text = {
                     Column {
-                        Text("Are you sure this is a real emergency? Select type:")
+                        Text(s.confirmEmergencyBody)
                         Spacer(modifier = Modifier.height(16.dp))
                         Column(Modifier.selectableGroup()) {
-                            crisisOptions.forEach { option ->
+                            crisisLabels.forEachIndexed { index, label ->
                                 Row(
                                     Modifier
                                         .fillMaxWidth()
                                         .height(52.dp)
                                         .selectable(
-                                            selected = (option == selectedCrisisType),
-                                            onClick = { selectedCrisisType = option },
+                                            selected = (index == selectedCrisisIndex),
+                                            onClick = { selectedCrisisIndex = index },
                                             role = Role.RadioButton
                                         )
                                         .padding(horizontal = 16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     RadioButton(
-                                        selected = (option == selectedCrisisType),
+                                        selected = (index == selectedCrisisIndex),
                                         onClick = null
                                     )
                                     Text(
-                                        text = option,
+                                        text = label,
                                         style = MaterialTheme.typography.bodyLarge,
                                         modifier = Modifier.padding(start = 16.dp)
                                     )
@@ -174,15 +183,15 @@ fun CrisisScreen(
                     TextButton(
                         onClick = {
                             showCrisisDialog = false
-                            onNeedHelpClick(selectedCrisisType)
+                            onNeedHelpClick(crisisKeys[selectedCrisisIndex])
                         }
                     ) {
-                        Text("🆘 Send Emergency", color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
+                        Text(s.sendEmergency, color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showCrisisDialog = false }) {
-                        Text("Cancel")
+                        Text(s.cancel)
                     }
                 }
             )
@@ -190,40 +199,23 @@ fun CrisisScreen(
 
         if (showChecklist) {
             val generalRules = listOf(
-                "Stay calm: Keep your mind clear and analyze the danger.",
-                "Assess situation: Are you in a safe place? If not, move urgently.",
-                "Call 112: Notify authorities if there are victims.",
-                "Alert group: Wait for location confirmations from others."
+                s.ruleStayCalm,
+                s.ruleAssessSituation,
+                s.ruleCall112,
+                s.ruleAlertGroup
             )
 
             val specificRules = when (crisisType) {
-                "Fire" -> listOf(
-                    "Use stairs, avoid elevators completely",
-                    "Stay as close to the floor as possible",
-                    "Cover nose/mouth with a damp cloth"
-                )
-                "Earthquake" -> listOf(
-                    "Take cover under a sturdy desk/table",
-                    "Stay away from windows or tall furniture",
-                    "Wait for the shaking to stop before exiting",
-                    "Do not use stairs during the earthquake"
-                )
-                "Military Risk" -> listOf(
-                    "Evacuate the area in an organized manner if exit is safe",
-                    "Do not trigger large electronic equipment nearby",
-                    "Seek the nearest civil shelter / bunker"
-                )
-                "Flood" -> listOf(
-                    "Turn off gas and electricity supply",
-                    "Move documents and supplies to upper floors",
-                    "Avoid contact with stagnant or muddy water outside"
-                )
+                "Fire" -> listOf(s.fireRule1, s.fireRule2, s.fireRule3)
+                "Earthquake" -> listOf(s.quakeRule1, s.quakeRule2, s.quakeRule3, s.quakeRule4)
+                "Military Risk" -> listOf(s.milRule1, s.milRule2, s.milRule3)
+                "Flood" -> listOf(s.floodRule1, s.floodRule2, s.floodRule3)
                 else -> emptyList()
             }
 
             AlertDialog(
                 onDismissRequest = { showChecklist = false },
-                title = { Text("📋 Checklist: ${crisisType ?: "General"}") },
+                title = { Text("📋 ${s.checklist}: ${crisisType ?: "General"}") },
                 text = {
                     LazyColumn {
                         items(specificRules + generalRules) { rule ->
@@ -244,7 +236,7 @@ fun CrisisScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { showChecklist = false }) {
-                        Text("Understood", fontWeight = FontWeight.Bold)
+                        Text(s.understood, fontWeight = FontWeight.Bold)
                     }
                 }
             )

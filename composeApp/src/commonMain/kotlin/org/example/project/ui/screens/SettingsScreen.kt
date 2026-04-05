@@ -17,24 +17,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.data.AuthRepository
+import org.example.project.i18n.AppLanguage
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     isDarkMode: Boolean,
     onToggleDarkMode: (Boolean) -> Unit,
+    currentLanguage: AppLanguage,
+    onChangeLanguage: (AppLanguage) -> Unit,
     onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
     val currentUser = AuthRepository.currentUser
+    val s = stringsFor(LocalAppLanguage.current)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(s.settingsTitle) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = s.loginBack)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -51,7 +57,7 @@ fun SettingsScreen(
         ) {
             // ── YOUR PROFILE ──
             Text(
-                text = "Your Profile",
+                text = s.yourProfile,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
@@ -92,21 +98,21 @@ fun SettingsScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = currentUser?.username ?: "Guest",
+                            text = currentUser?.username ?: s.guest,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Member ID: ${currentUser?.memberId ?: "—"}",
+                            text = s.memberId.replace("%s", currentUser?.memberId ?: "—"),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (currentUser != null) {
                             val groupCount = currentUser.joinedGroups.size
                             Text(
-                                text = "$groupCount Circle${if (groupCount != 1) "s" else ""} joined",
+                                text = s.circlesJoined.replace("%d", groupCount.toString()).replace("%s", if (groupCount != 1) "s" else ""),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -119,7 +125,7 @@ fun SettingsScreen(
 
             // ── APPEARANCE ──
             Text(
-                text = "Appearance",
+                text = s.appearance,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
@@ -151,13 +157,13 @@ fun SettingsScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Dark Mode",
+                            text = s.darkMode,
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = if (isDarkMode) "On" else "Off",
+                            text = if (isDarkMode) s.on else s.off,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -171,6 +177,66 @@ fun SettingsScreen(
                             checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                         )
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ── LANGUAGE ──
+            Text(
+                text = s.languageLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🌐", style = MaterialTheme.typography.titleLarge)
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = s.languageLabel,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = currentLanguage.displayName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Row {
+                        AppLanguage.entries.forEach { lang ->
+                            FilterChip(
+                                selected = currentLanguage == lang,
+                                onClick = { onChangeLanguage(lang) },
+                                label = { Text(lang.displayName) },
+                                modifier = Modifier.padding(start = 4.dp),
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                                )
+                            )
+                        }
+                    }
                 }
             }
 
@@ -189,7 +255,7 @@ fun SettingsScreen(
                     contentColor = MaterialTheme.colorScheme.onError
                 )
             ) {
-                Text("Log Out", fontWeight = FontWeight.Bold)
+                Text(s.logOut, fontWeight = FontWeight.Bold)
             }
         }
     }

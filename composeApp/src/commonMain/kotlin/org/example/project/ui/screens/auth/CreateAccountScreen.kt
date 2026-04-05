@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.ui.theme.LocalSyncSafeColors
 import org.example.project.ui.theme.SafeGreen
 import org.example.project.ui.theme.AccentPurple
@@ -35,14 +37,15 @@ fun CreateAccountScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val extra = LocalSyncSafeColors.current
+    val s = stringsFor(LocalAppLanguage.current)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sign Up", color = extra.authOnGradient) },
+                title = { Text(s.signUpTitle, color = extra.authOnGradient) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = extra.authOnGradient)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = s.loginBack, tint = extra.authOnGradient)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -68,14 +71,14 @@ fun CreateAccountScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Create Profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
+                    Text(s.createProfile, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
-                        label = { Text("Username", color = extra.authOnGradientMuted) },
+                        label = { Text(s.username, color = extra.authOnGradientMuted) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
                             focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder,
@@ -89,7 +92,7 @@ fun CreateAccountScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Password", color = extra.authOnGradientMuted) },
+                        label = { Text(s.password, color = extra.authOnGradientMuted) },
                         visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
@@ -107,10 +110,10 @@ fun CreateAccountScreen(
                         contentColor = extra.authOnGradient
                     ) {
                         Tab(selected = selectedMode == 0, onClick = { selectedMode = 0 }) {
-                            Text("Create Circle", modifier = Modifier.padding(16.dp))
+                            Text(s.createCircleTab, modifier = Modifier.padding(16.dp))
                         }
                         Tab(selected = selectedMode == 1, onClick = { selectedMode = 1 }) {
-                            Text("Join Circle", modifier = Modifier.padding(16.dp))
+                            Text(s.joinCircleTab, modifier = Modifier.padding(16.dp))
                         }
                     }
                     
@@ -120,7 +123,7 @@ fun CreateAccountScreen(
                         OutlinedTextField(
                             value = groupName,
                             onValueChange = { groupName = it },
-                            label = { Text("New Circle Name", color = extra.authOnGradientMuted) },
+                            label = { Text(s.newCircleName, color = extra.authOnGradientMuted) },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
                                 focusedBorderColor = SafeGreen, unfocusedBorderColor = extra.authInputBorder,
@@ -132,7 +135,7 @@ fun CreateAccountScreen(
                         OutlinedTextField(
                             value = inviteCode,
                             onValueChange = { inviteCode = it.uppercase() },
-                            label = { Text("Invite Code", color = extra.authOnGradientMuted) },
+                            label = { Text(s.inviteCodeLabel, color = extra.authOnGradientMuted) },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
                                 focusedBorderColor = AccentPurple, unfocusedBorderColor = extra.authInputBorder,
@@ -160,7 +163,7 @@ fun CreateAccountScreen(
                                 
                                 val result = onSubmit(username.trim(), password.trim(), gn, ic)
                                 if (result.isFailure) {
-                                    errorMessage = result.exceptionOrNull()?.message ?: "Registration failed."
+                                    errorMessage = result.exceptionOrNull()?.message ?: s.registrationFailed
                                 }
                                 isLoading = false
                             }
@@ -171,7 +174,7 @@ fun CreateAccountScreen(
                         enabled = username.isNotBlank() && password.isNotBlank() && (if (selectedMode == 0) groupName.isNotBlank() else inviteCode.isNotBlank()) && !isLoading
                     ) {
                         if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = extra.authButtonForeground)
-                        else Text("Create & Enter", fontWeight = FontWeight.Bold)
+                        else Text(s.createAndEnter, fontWeight = FontWeight.Bold)
                     }
                 }
             }

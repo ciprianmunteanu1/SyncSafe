@@ -12,23 +12,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.viewmodel.ChecklistItem
 import org.example.project.viewmodel.CrisisViewModel
 
 @Composable
 fun ChecklistScreen() {
-    // In a real app, this state comes from a ViewModel
+    val s = stringsFor(LocalAppLanguage.current)
+
     var items by remember {
         mutableStateOf(
             listOf(
-                ChecklistItem("1", "🗣️ Communicate", "Notify family members"),
-                ChecklistItem("2", "🗣️ Communicate", "Update status in app to inform the group"),
-                ChecklistItem("3", "🔍 Evaluate", "Assess yourself and others for injuries"),
-                ChecklistItem("4", "🔍 Evaluate", "Check surroundings for immediate dangers (fire, structural damage)"),
-                ChecklistItem("5", "🏃 Act", "Grab your emergency kit"),
-                ChecklistItem("6", "🏃 Act", "Evacuate if the building is compromised"),
-                ChecklistItem("7", "🏃 Act", "Head to the designated Meeting Point")
+                ChecklistItem("1", "🗣️ ${s.categoryComm}", s.commAnnounce),
+                ChecklistItem("2", "🗣️ ${s.categoryComm}", s.commCheckStatus),
+                ChecklistItem("3", "🔍 ${s.categoryAssess}", s.assessDangers),
+                ChecklistItem("4", "🔍 ${s.categoryAssess}", s.assessInjured),
+                ChecklistItem("5", "🏃 ${s.categoryAct}", s.actLocation),
+                ChecklistItem("6", "🏃 ${s.categoryAct}", s.actHeadMeeting),
+                ChecklistItem("7", "🏃 ${s.categoryAct}", s.actCall112)
             )
         )
     }
@@ -44,7 +46,7 @@ fun ChecklistScreen() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Emergency Checklist",
+            text = s.emergencyChecklist,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -53,7 +55,7 @@ fun ChecklistScreen() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "$completedCount of $totalCount completed",
+            text = s.completedOf.replaceFirst("%d", completedCount.toString()).replaceFirst("%d", totalCount.toString()),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )

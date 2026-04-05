@@ -13,6 +13,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.example.project.i18n.AppLanguage
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.model.Alert
 import org.example.project.model.AlertType
 
@@ -21,6 +24,8 @@ import kotlin.time.ExperimentalTime
 
 @Composable
 fun ActivityFeedScreen(alerts: List<Alert>) {
+    val s = stringsFor(LocalAppLanguage.current)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -34,7 +39,7 @@ fun ActivityFeedScreen(alerts: List<Alert>) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Live Activity Feed",
+                text = s.liveActivityFeed,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -44,7 +49,7 @@ fun ActivityFeedScreen(alerts: List<Alert>) {
         if (alerts.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "No recent activity.",
+                    text = s.noRecentActivity,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                 )
             }
@@ -64,6 +69,7 @@ fun ActivityFeedScreen(alerts: List<Alert>) {
 
 @Composable
 fun AlertItemRow(alert: Alert) {
+    val s = stringsFor(LocalAppLanguage.current)
     val isMajorEmergency = alert.type == AlertType.NEEDS_HELP && alert.message.contains("EMERGENCY:")
 
     if (isMajorEmergency) {
@@ -78,7 +84,7 @@ fun AlertItemRow(alert: Alert) {
                     Text(text = "🚨", style = MaterialTheme.typography.headlineMedium)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "MAJOR EMERGENCY!",
+                        text = s.majorEmergency,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White
@@ -93,7 +99,7 @@ fun AlertItemRow(alert: Alert) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formatRelativeTime(alert.timestamp),
+                    text = formatRelativeTime(alert.timestamp, LocalAppLanguage.current),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f)
                 )
@@ -139,7 +145,7 @@ fun AlertItemRow(alert: Alert) {
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = formatRelativeTime(alert.timestamp),
+                        text = formatRelativeTime(alert.timestamp, LocalAppLanguage.current),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -150,17 +156,18 @@ fun AlertItemRow(alert: Alert) {
 }
 
 @OptIn(ExperimentalTime::class)
-fun formatRelativeTime(timestamp: Long): String {
+fun formatRelativeTime(timestamp: Long, language: AppLanguage = AppLanguage.EN): String {
+    val s = stringsFor(language)
     val now = Clock.System.now().toEpochMilliseconds()
     val diffSecs = (now - timestamp) / 1000
     
     return when {
-        diffSecs < 60 -> "Just now"
-        diffSecs < 120 -> "1 minute ago"
-        diffSecs < 3600 -> "${diffSecs / 60} minutes ago"
-        diffSecs < 7200 -> "1 hour ago"
-        diffSecs < 86400 -> "${diffSecs / 3600} hours ago"
-        diffSecs < 172800 -> "1 day ago"
-        else -> "${diffSecs / 86400} days ago"
+        diffSecs < 60 -> s.justNow
+        diffSecs < 120 -> s.oneMinAgo
+        diffSecs < 3600 -> s.minutesAgo.replace("%d", (diffSecs / 60).toString())
+        diffSecs < 7200 -> s.oneHourAgo
+        diffSecs < 86400 -> s.hoursAgo.replace("%d", (diffSecs / 3600).toString())
+        diffSecs < 172800 -> s.oneDayAgo
+        else -> s.daysAgo.replace("%d", (diffSecs / 86400).toString())
     }
 }

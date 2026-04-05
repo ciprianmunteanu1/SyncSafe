@@ -23,6 +23,8 @@ import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewStateWithHTMLData
 import com.multiplatform.webview.web.rememberWebViewNavigator
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.model.MeetingPoint
 import org.example.project.model.Member
 import org.example.project.model.MemberStatus
@@ -214,6 +216,8 @@ fun MapScreen(
     onSetMeetingPoint: (Double, Double, String) -> Unit,
     onDeleteMeetingPoint: (String) -> Unit
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
+
     var showDialog by remember { mutableStateOf(false) }
     var draftLat by remember { mutableStateOf<Double?>(null) }
     var draftLng by remember { mutableStateOf<Double?>(null) }
@@ -290,7 +294,7 @@ fun MapScreen(
                 modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
                 containerColor = MaterialTheme.colorScheme.primaryContainer
             ) {
-                Text("📍 Point", modifier = Modifier.padding(horizontal = 12.dp))
+                Text(s.point, modifier = Modifier.padding(horizontal = 12.dp))
             }
         }
 
@@ -298,7 +302,7 @@ fun MapScreen(
         LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().padding(16.dp)) {
             if (meetingPoints.isNotEmpty()) {
                 item {
-                    Text(text = "Rendez-vous Points", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(text = s.rendezvousPoints, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
                 items(meetingPoints) { pt ->
@@ -335,7 +339,7 @@ fun MapScreen(
                             ) {
                                 Text("📍 ${pt.name}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                                 TextButton(onClick = { onDeleteMeetingPoint(pt.id) }) {
-                                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                                    Text(s.deleteButton, color = MaterialTheme.colorScheme.error)
                                 }
                             }
                             
@@ -351,14 +355,14 @@ fun MapScreen(
                                         "${distance.toInt()} m"
                                     }
                                     Text(
-                                        text = "🗺️ Distance from you: $distStr",
+                                        text = s.distanceFromYou.replace("%s", distStr),
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         modifier = Modifier.padding(top = 8.dp)
                                     )
                                 } else {
                                     Text(
-                                        text = "Enable location to calculate distance.",
+                                        text = s.enableLocationDistance,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray,
                                         modifier = Modifier.padding(top = 8.dp)
@@ -373,7 +377,7 @@ fun MapScreen(
 
             item {
                 Text(
-                    text = "Members Radar",
+                    text = s.membersRadar,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
@@ -410,7 +414,7 @@ fun MapScreen(
                             )
                         }
                         Text(
-                            text = if (member.hasLocation) "On map" else "No GPS",
+                            text = if (member.hasLocation) s.onMap else s.noGps,
                             style = MaterialTheme.typography.labelSmall,
                             color = if (member.hasLocation) SafeGreen else Color.Gray
                         )
@@ -446,6 +450,7 @@ fun SetMeetingPointDialog(
     onDismiss: () -> Unit,
     onConfirm: (Double, Double, String) -> Unit
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
     var name by remember { mutableStateOf("") }
     var latStr by remember { mutableStateOf(initialLat?.toString() ?: "") }
     var lngStr by remember { mutableStateOf(initialLng?.toString() ?: "") }
@@ -454,7 +459,7 @@ fun SetMeetingPointDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Set Meeting Point",
+                text = s.setMeetingPointTitle,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -464,21 +469,21 @@ fun SetMeetingPointDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Location Name") },
+                    label = { Text(s.locationName) },
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = latStr,
                     onValueChange = { latStr = it },
-                    label = { Text("Latitude") },
+                    label = { Text(s.latitude) },
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = lngStr,
                     onValueChange = { lngStr = it },
-                    label = { Text("Longitude") },
+                    label = { Text(s.longitude) },
                     singleLine = true
                 )
             }
@@ -488,15 +493,15 @@ fun SetMeetingPointDialog(
                 onClick = {
                     val lat = latStr.toDoubleOrNull() ?: 0.0
                     val lng = lngStr.toDoubleOrNull() ?: 0.0
-                    onConfirm(lat, lng, name.ifBlank { "Meeting Point" })
+                    onConfirm(lat, lng, name.ifBlank { s.meetingPoint })
                 }
             ) {
-                Text("Set")
+                Text(s.setButton)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(s.cancel)
             }
         }
     )

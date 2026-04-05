@@ -32,6 +32,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Clock
+import org.example.project.i18n.AppLanguage
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.ui.screens.*
 import org.example.project.ui.screens.auth.WelcomeScreen
 import org.example.project.ui.screens.auth.CreateAccountScreen
@@ -42,7 +45,9 @@ import org.example.project.data.AuthRepository
 @Composable
 fun Navigation(
     isDarkMode: Boolean = true,
-    onToggleDarkMode: (Boolean) -> Unit = {}
+    onToggleDarkMode: (Boolean) -> Unit = {},
+    currentLanguage: AppLanguage = AppLanguage.EN,
+    onChangeLanguage: (AppLanguage) -> Unit = {}
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -51,6 +56,8 @@ fun Navigation(
 
     val group by GroupRepository.group.collectAsState()
     val alerts by GroupRepository.alerts.collectAsState()
+
+    val s = stringsFor(LocalAppLanguage.current)
 
     val startDestination = "welcome"
     var currentCrisisType by remember { mutableStateOf<String?>(null) }
@@ -268,6 +275,8 @@ fun Navigation(
                 SettingsScreen(
                     isDarkMode = isDarkMode,
                     onToggleDarkMode = onToggleDarkMode,
+                    currentLanguage = currentLanguage,
+                    onChangeLanguage = onChangeLanguage,
                     onBack = { navController.popBackStack() },
                     onLogout = {
                         AuthManager.clearSession()
@@ -291,11 +300,11 @@ fun Navigation(
             containerColor = androidx.compose.ui.graphics.Color(0xFF8B0000),
             titleContentColor = androidx.compose.ui.graphics.Color.White,
             textContentColor = androidx.compose.ui.graphics.Color.White,
-            title = { Text("🚨 EMERGENCY!", fontWeight = FontWeight.ExtraBold) },
+            title = { Text(s.sosEmergencyTitle, fontWeight = FontWeight.ExtraBold) },
             text = {
                 androidx.compose.foundation.layout.Column {
                     Text(
-                        text = "${alert.memberName} has an emergency!",
+                        text = s.sosHasEmergency.replace("%s", alert.memberName),
                         style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = androidx.compose.ui.graphics.Color.White
@@ -303,7 +312,7 @@ fun Navigation(
                     if (crisisType != null) {
                         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Emergency type: $crisisType",
+                            text = s.sosEmergencyType.replace("%s", crisisType),
                             style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
                             color = androidx.compose.ui.graphics.Color.White
                         )
@@ -323,7 +332,7 @@ fun Navigation(
                         contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("📍 VIEW ON MAP", fontWeight = FontWeight.Bold)
+                    Text(s.sosViewOnMap, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -331,7 +340,7 @@ fun Navigation(
                     onClick = { incomingSosAlert = null },
                     colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.7f))
                 ) {
-                    Text("Understood", fontWeight = FontWeight.Bold)
+                    Text(s.sosUnderstood, fontWeight = FontWeight.Bold)
                 }
             }
         )

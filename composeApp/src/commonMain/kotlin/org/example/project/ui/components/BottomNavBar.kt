@@ -12,19 +12,20 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 
 data class BottomNavItem(
-    val title: String,
     val route: String,
     val icon: ImageVector
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("Home", "home", Icons.Default.Home),
-    BottomNavItem("Map", "map", Icons.Default.LocationOn),
-    BottomNavItem("Feed", "feed", Icons.AutoMirrored.Filled.List),
-    BottomNavItem("Guide", "guide", Icons.Default.Info),
-    BottomNavItem("Settings", "settings", Icons.Default.Settings)
+    BottomNavItem("home", Icons.Default.Home),
+    BottomNavItem("map", Icons.Default.LocationOn),
+    BottomNavItem("feed", Icons.AutoMirrored.Filled.List),
+    BottomNavItem("guide", Icons.Default.Info),
+    BottomNavItem("settings", Icons.Default.Settings)
 )
 
 @Composable
@@ -32,13 +33,16 @@ fun BottomNavBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
+    val labels = listOf(s.navHome, s.navMap, s.navFeed, s.navGuide, s.navSettings)
+
     NavigationBar {
-        bottomNavItems.forEach { item ->
+        bottomNavItems.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = { onNavigate(item.route) },
-                icon = { Icon(item.icon, contentDescription = item.title) },
-                label = { Text(item.title) }
+                icon = { Icon(item.icon, contentDescription = labels[index]) },
+                label = { Text(labels[index]) }
             )
         }
     }

@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.model.MemberStatus
 
 @Composable
@@ -23,6 +25,8 @@ fun StatusScreen(
     onStatusClick: (MemberStatus) -> Unit,
     onLogoutClick: () -> Unit
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,7 +37,7 @@ fun StatusScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Update Your Status",
+            text = s.updateYourStatus,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
@@ -42,7 +46,7 @@ fun StatusScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Tap a status to notify your group instantly",
+            text = s.tapStatusNotify,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             textAlign = TextAlign.Center
@@ -72,7 +76,7 @@ fun StatusScreen(
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
         ) {
-            Text("Leave Group / Logout", fontWeight = FontWeight.Bold)
+            Text(s.leaveGroupLogout, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -80,11 +84,18 @@ fun StatusScreen(
 
 @Composable
 fun StatusCard(status: MemberStatus, onClick: () -> Unit) {
+    val s = stringsFor(LocalAppLanguage.current)
     val backgroundColor = when (status) {
         MemberStatus.SAFE -> Color(0xFF4CAF50)
         MemberStatus.UNKNOWN -> Color(0xFF9E9E9E)
         MemberStatus.NEEDS_HELP -> Color(0xFFF44336)
         MemberStatus.ON_THE_WAY -> Color(0xFF2196F3)
+    }
+    val localizedLabel = when (status) {
+        MemberStatus.SAFE -> s.statusSafe
+        MemberStatus.UNKNOWN -> s.statusUnknown
+        MemberStatus.NEEDS_HELP -> s.statusNeedsHelp
+        MemberStatus.ON_THE_WAY -> s.statusOnMyWay
     }
 
     Card(
@@ -108,7 +119,7 @@ fun StatusCard(status: MemberStatus, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = status.label,
+                text = localizedLabel,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,

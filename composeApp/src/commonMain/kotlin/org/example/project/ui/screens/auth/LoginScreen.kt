@@ -14,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.ui.theme.LocalSyncSafeColors
 import org.example.project.ui.theme.EmergencyRed
 
@@ -30,14 +32,15 @@ fun LoginScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val extra = LocalSyncSafeColors.current
+    val s = stringsFor(LocalAppLanguage.current)
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Log In", color = extra.authOnGradient) },
+                title = { Text(s.loginTitle, color = extra.authOnGradient) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = extra.authOnGradient)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = s.loginBack, tint = extra.authOnGradient)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
@@ -63,14 +66,14 @@ fun LoginScreen(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Welcome Back", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
+                    Text(s.loginTitle, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
                     
                     Spacer(modifier = Modifier.height(24.dp))
 
                     OutlinedTextField(
                         value = username,
                         onValueChange = { username = it },
-                        label = { Text("Username", color = extra.authOnGradientMuted) },
+                        label = { Text(s.loginUsername, color = extra.authOnGradientMuted) },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
                             focusedBorderColor = MaterialTheme.colorScheme.primary, unfocusedBorderColor = extra.authInputBorder,
@@ -84,7 +87,7 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Password", color = extra.authOnGradientMuted) },
+                        label = { Text(s.loginPassword, color = extra.authOnGradientMuted) },
                         visualTransformation = PasswordVisualTransformation(),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = extra.authOnGradient, unfocusedTextColor = extra.authOnGradient,
@@ -108,7 +111,7 @@ fun LoginScreen(
                                 errorMessage = null
                                 val result = onSubmit(username.trim(), password.trim())
                                 if (result.isFailure) {
-                                    errorMessage = result.exceptionOrNull()?.message ?: "Login failed."
+                                    errorMessage = result.exceptionOrNull()?.message ?: s.loginFailed
                                 }
                                 isLoading = false
                             }
@@ -119,7 +122,7 @@ fun LoginScreen(
                         enabled = username.isNotBlank() && password.isNotBlank() && !isLoading
                     ) {
                         if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = extra.authButtonForeground)
-                        else Text("Enter Circle", fontWeight = FontWeight.Bold)
+                        else Text(s.loginButton, fontWeight = FontWeight.Bold)
                     }
                 }
             }

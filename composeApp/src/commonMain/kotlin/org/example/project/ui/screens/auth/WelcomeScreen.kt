@@ -9,15 +9,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.example.project.data.AuthManager
 import org.example.project.data.AuthRepository
 import org.example.project.data.GroupRepository
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.ui.theme.LocalSyncSafeColors
-import kotlinx.coroutines.launch
 
 @Composable
 fun WelcomeScreen(
@@ -26,6 +26,7 @@ fun WelcomeScreen(
     onAutoLoginSuccess: (String) -> Unit
 ) {
     val extra = LocalSyncSafeColors.current
+    val s = stringsFor(LocalAppLanguage.current)
 
     var isSilentLoggingIn by remember { mutableStateOf(false) }
 
@@ -68,21 +69,21 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Text("SyncSafe", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Smart connection. Real-time safety.", style = MaterialTheme.typography.titleMedium, color = extra.authOnGradientMuted, textAlign = TextAlign.Center)
+            Text(s.welcomeTagline, style = MaterialTheme.typography.titleMedium, color = extra.authOnGradientMuted, textAlign = TextAlign.Center)
             
             Spacer(modifier = Modifier.height(48.dp))
 
             if (isSilentLoggingIn) {
                 CircularProgressIndicator(color = extra.authOnGradient)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Restoring session...", color = extra.authOnGradientMuted)
+                Text(s.welcomeRestoringSession, color = extra.authOnGradientMuted)
             } else {
                 Button(
                     onClick = onNavigateToLogin,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = MaterialTheme.shapes.large,
                     colors = ButtonDefaults.buttonColors(containerColor = extra.authButtonBackground, contentColor = extra.authButtonForeground)
-                ) { Text("Log In", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                ) { Text(s.welcomeLogin, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
                 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -92,7 +93,7 @@ fun WelcomeScreen(
                     shape = MaterialTheme.shapes.large,
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = extra.authOnGradient),
                     border = androidx.compose.foundation.BorderStroke(1.dp, extra.authOnGradient.copy(alpha = 0.5f))
-                ) { Text("Create Account", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+                ) { Text(s.welcomeCreateAccount, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
             }
         }
     }

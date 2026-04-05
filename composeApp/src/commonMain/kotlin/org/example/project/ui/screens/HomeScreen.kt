@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.example.project.i18n.LocalAppLanguage
+import org.example.project.i18n.stringsFor
 import org.example.project.model.Group
 import org.example.project.ui.components.MemberCard
 import org.example.project.ui.theme.EmergencyRed
@@ -43,6 +45,8 @@ fun HomeScreen(
     onOnMyWayClick: () -> Unit,
     onCrisisModeClick: () -> Unit
 ) {
+    val s = stringsFor(LocalAppLanguage.current)
+
     Column(modifier = Modifier.fillMaxSize()) {
         // CRISIS MODE BANNER
         Box(
@@ -54,7 +58,7 @@ fun HomeScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "🚨 ENTER CRISIS MODE 🚨",
+                text = s.enterCrisisMode,
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
@@ -90,7 +94,7 @@ fun HomeScreen(
                             onClick = onCreateOrJoin,
                             modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), shape = MaterialTheme.shapes.small)
                         ) {
-                            Icon(Icons.Filled.Add, contentDescription = "Add Circle", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Filled.Add, contentDescription = s.addCircle, tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
@@ -114,7 +118,7 @@ fun HomeScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Invite code: ${group.inviteCode} (Tap to copy)",
+                    text = s.inviteCodeTap.replace("%s", group.inviteCode),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.clickable {
@@ -149,7 +153,7 @@ fun HomeScreen(
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                         modifier = Modifier.weight(1f).height(64.dp)
                     ) {
-                        Text("I'M SAFE", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(s.imSafe, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     }
                     Button(
                         onClick = onOnMyWayClick,
@@ -157,7 +161,7 @@ fun HomeScreen(
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                         modifier = Modifier.weight(1f).height(64.dp)
                     ) {
-                        Text("ON MY WAY", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                        Text(s.onMyWay, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                     }
                 }
                 
@@ -168,16 +172,16 @@ fun HomeScreen(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth().height(64.dp)
                 ) {
-                    Text("NEED HELP", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(s.needHelp, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("You do not have an active Circle.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(s.noActiveCircle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = onCreateOrJoin) {
-                        Text("Create or Join a Circle")
+                        Text(s.createOrJoinCircle)
                     }
                 }
             }
