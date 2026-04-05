@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import org.example.project.model.Alert
 import org.example.project.model.AlertType
 
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+
 @Composable
 fun ActivityFeedScreen(alerts: List<Alert>) {
     Column(
@@ -99,13 +102,29 @@ fun AlertItemRow(alert: Alert) {
                     fontWeight = if (alert.type == AlertType.NEEDS_HELP) FontWeight.Bold else FontWeight.Normal
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // Timestamp formatter is abbreviated for MVP UI demonstration
+                // Exact relative time representation
                 Text(
-                    text = "A few moments ago",
+                    text = formatRelativeTime(alert.timestamp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+fun formatRelativeTime(timestamp: Long): String {
+    val now = Clock.System.now().toEpochMilliseconds()
+    val diffSecs = (now - timestamp) / 1000
+    
+    return when {
+        diffSecs < 60 -> "Just now"
+        diffSecs < 120 -> "1 minute ago"
+        diffSecs < 3600 -> "${diffSecs / 60} minutes ago"
+        diffSecs < 7200 -> "1 hour ago"
+        diffSecs < 86400 -> "${diffSecs / 3600} hours ago"
+        diffSecs < 172800 -> "1 day ago"
+        else -> "${diffSecs / 86400} days ago"
     }
 }

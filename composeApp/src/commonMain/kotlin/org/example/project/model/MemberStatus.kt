@@ -16,5 +16,5 @@ enum class MemberStatus(
     SAFE(label = "Safe", emoji = "✅"),
     UNKNOWN(label = "Unknown", emoji = "❓"),
     NEEDS_HELP(label = "Needs Help", emoji = "🆘"),
-    ON_THE_WAY(label = "On The Way", emoji = "🚶")
+    ON_THE_WAY(label = "On My Way", emoji = "🚶")
 }

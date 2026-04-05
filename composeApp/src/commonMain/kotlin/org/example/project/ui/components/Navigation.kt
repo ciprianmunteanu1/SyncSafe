@@ -165,6 +165,7 @@ fun Navigation(
                     onCreateOrJoin = { navController.navigate("select_group") },
                     onSafeClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) } },
                     onNeedHelpClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.NEEDS_HELP) } },
+                    onOnMyWayClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.ON_THE_WAY) } },
                     onCrisisModeClick = { navController.navigate("crisis") }
                 ) 
             }

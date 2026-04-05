@@ -16,12 +16,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.example.project.model.Group
 import org.example.project.ui.components.MemberCard
 import org.example.project.ui.theme.EmergencyRed
 import org.example.project.ui.theme.SafeGreen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,15 +40,20 @@ fun HomeScreen(
     onCreateOrJoin: () -> Unit,
     onSafeClick: () -> Unit,
     onNeedHelpClick: () -> Unit,
+    onOnMyWayClick: () -> Unit,
     onCrisisModeClick: () -> Unit
 ) {
+    var showCrisisDialog by remember { mutableStateOf(false) }
+    var selectedCrisisType by remember { mutableStateOf("Incendiu") }
+    val crisisOptions = listOf("Incendiu", "Cutremur", "Bombă", "Inundație")
+
     Column(modifier = Modifier.fillMaxSize()) {
         // CRISIS MODE BANNER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(EmergencyRed)
-                .clickable { onCrisisModeClick() }
+                .clickable { showCrisisDialog = true }
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -121,26 +134,45 @@ fun HomeScreen(
                 }
             }
 
-            // Butoane Rapide Jos
-            Row(
+            // Butoane Rapide Jos (Pyramid UI)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Button(
-                    onClick = onSafeClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = SafeGreen),
-                    modifier = Modifier.weight(1f).height(64.dp)
+                // Top level of pyramid
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("I'M SAFE", style = MaterialTheme.typography.titleLarge)
+                    Button(
+                        onClick = onSafeClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = SafeGreen),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f).height(64.dp)
+                    ) {
+                        Text("I'M SAFE", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = onOnMyWayClick,
+                        colors = ButtonDefaults.buttonColors(containerColor = org.example.project.ui.theme.OnTheWayBlue),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f).height(64.dp)
+                    ) {
+                        Text("ON MY WAY", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    }
                 }
+                
+                // Bottom level of pyramid
                 Button(
                     onClick = onNeedHelpClick,
                     colors = ButtonDefaults.buttonColors(containerColor = EmergencyRed),
-                    modifier = Modifier.weight(1f).height(64.dp)
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth().height(64.dp)
                 ) {
-                    Text("NEED HELP", style = MaterialTheme.typography.titleLarge)
+                    Text("NEED HELP", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
@@ -154,5 +186,62 @@ fun HomeScreen(
                 }
             }
         }
+    }
+
+    if (showCrisisDialog) {
+        AlertDialog(
+            onDismissRequest = { showCrisisDialog = false },
+            title = { Text("Confirmă Urgența") },
+            text = {
+                Column {
+                    Text("Ești sigur că este o urgență? Te rugăm să selectezi tipul:")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(Modifier.selectableGroup()) {
+                        crisisOptions.forEach { text ->
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(46.dp)
+                                    .selectable(
+                                        selected = (text == selectedCrisisType),
+                                        onClick = { selectedCrisisType = text },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = (text == selectedCrisisType),
+                                    onClick = null 
+                                )
+                                Text(
+                                    text = text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCrisisDialog = false
+                        // TODO: În viitor, putem transmite `selectedCrisisType` către onCrisisModeClick
+                        onCrisisModeClick()
+                    }
+                ) {
+                    Text("Confirmă", color = EmergencyRed, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCrisisDialog = false }
+                ) {
+                    Text("Anulează")
+                }
+            }
+        )
     }
 }
