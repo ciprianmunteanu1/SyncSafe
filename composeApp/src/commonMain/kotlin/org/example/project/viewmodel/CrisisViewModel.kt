@@ -85,20 +85,20 @@ class CrisisViewModel : ViewModel() {
     // ─── Date implicite ───────────────────────────────────────────────────────
 
     private fun defaultChecklistItems(): List<ChecklistItem> = listOf(
-        // Comunică
-        ChecklistItem("comm_1", "Anunță că ești în siguranță (buton I'm Safe)", "Comunică"),
-        ChecklistItem("comm_2", "Verifică statusul tuturor membrilor grupului", "Comunică"),
-        ChecklistItem("comm_3", "Confirmă meeting point-ul cu grupul", "Comunică"),
+        // Communicate
+        ChecklistItem("comm_1", "Announce you are safe (I'm Safe button)", "Communicate"),
+        ChecklistItem("comm_2", "Check status of all group members", "Communicate"),
+        ChecklistItem("comm_3", "Confirm meeting point with group", "Communicate"),
 
-        // Evaluează
-        ChecklistItem("eval_1", "Evaluează pericolele imediate din jur", "Evaluează"),
-        ChecklistItem("eval_2", "Verifică dacă există persoane rănite", "Evaluează"),
-        ChecklistItem("eval_3", "Identifică ieșirile de urgență", "Evaluează"),
+        // Assess
+        ChecklistItem("eval_1", "Assess immediate dangers around you", "Assess"),
+        ChecklistItem("eval_2", "Check if anyone is injured", "Assess"),
+        ChecklistItem("eval_3", "Identify emergency exits", "Assess"),
 
-        // Acționează
-        ChecklistItem("act_1", "Activează partajarea locației", "Acționează"),
-        ChecklistItem("act_2", "Mergi spre punctul de întâlnire al grupului", "Acționează"),
-        ChecklistItem("act_3", "Sună 112 dacă situația este critică", "Acționează"),
-        ChecklistItem("act_4", "Urmează instrucțiunile autorităților", "Acționează")
+        // Act
+        ChecklistItem("act_1", "Enable location sharing", "Act"),
+        ChecklistItem("act_2", "Head to group meeting point", "Act"),
+        ChecklistItem("act_3", "Call 112 if situation is critical", "Act"),
+        ChecklistItem("act_4", "Follow authorities instructions", "Act")
     )
 }

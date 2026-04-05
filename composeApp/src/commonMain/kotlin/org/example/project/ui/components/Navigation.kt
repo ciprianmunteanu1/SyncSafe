@@ -283,19 +283,19 @@ fun Navigation(
 
     if (incomingSosAlert != null) {
         val alert = incomingSosAlert!!
-        val isCrisisMode = alert.message.contains("URGENȚĂ:")
-        val crisisType = if (isCrisisMode) alert.message.substringAfter("URGENȚĂ:").removeSuffix("!").trim() else null
+        val isCrisisMode = alert.message.contains("EMERGENCY:")
+        val crisisType = if (isCrisisMode) alert.message.substringAfter("EMERGENCY:").removeSuffix("!").trim() else null
 
         AlertDialog(
             onDismissRequest = { /* Nu se inchide prin click exterior */ },
             containerColor = androidx.compose.ui.graphics.Color(0xFF8B0000),
             titleContentColor = androidx.compose.ui.graphics.Color.White,
             textContentColor = androidx.compose.ui.graphics.Color.White,
-            title = { Text("🚨 URGENȚĂ!", fontWeight = FontWeight.ExtraBold) },
+            title = { Text("🚨 EMERGENCY!", fontWeight = FontWeight.ExtraBold) },
             text = {
                 androidx.compose.foundation.layout.Column {
                     Text(
-                        text = "${alert.memberName} are o urgență!",
+                        text = "${alert.memberName} has an emergency!",
                         style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = androidx.compose.ui.graphics.Color.White
@@ -303,7 +303,7 @@ fun Navigation(
                     if (crisisType != null) {
                         androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tip urgență: $crisisType",
+                            text = "Emergency type: $crisisType",
                             style = androidx.compose.material3.MaterialTheme.typography.bodyLarge,
                             color = androidx.compose.ui.graphics.Color.White
                         )
@@ -323,7 +323,7 @@ fun Navigation(
                         contentColor = androidx.compose.ui.graphics.Color.Black
                     )
                 ) {
-                    Text("📍 VĂD PE HARTĂ", fontWeight = FontWeight.Bold)
+                    Text("📍 VIEW ON MAP", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -331,7 +331,7 @@ fun Navigation(
                     onClick = { incomingSosAlert = null },
                     colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.7f))
                 ) {
-                    Text("Am înțeles", fontWeight = FontWeight.Bold)
+                    Text("Understood", fontWeight = FontWeight.Bold)
                 }
             }
         )

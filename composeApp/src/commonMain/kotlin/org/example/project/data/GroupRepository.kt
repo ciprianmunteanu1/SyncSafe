@@ -302,9 +302,9 @@ object GroupRepository {
             }
 
             val finalMessage = if (newStatus == MemberStatus.NEEDS_HELP && dangerType != null) {
-                "$name raportează URGENȚĂ: $dangerType!"
+                "$name reports EMERGENCY: $dangerType!"
             } else if (newStatus == MemberStatus.SAFE) {
-                "$name este în siguranță! ✅"
+                "$name is safe! ✅"
             } else {
                 "$name: ${newStatus.emoji} ${newStatus.label}"
             }
@@ -349,7 +349,7 @@ object GroupRepository {
                 memberId = id,
                 memberName = name,
                 type = AlertType.LOCATION_UPDATED,
-                message = "$name și-a actualizat locația."
+                message = "$name updated her location."
             )
         } catch (e: Exception) { /* continuăm */ }
     }

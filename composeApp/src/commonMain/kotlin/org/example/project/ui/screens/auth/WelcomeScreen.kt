@@ -68,14 +68,14 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(32.dp))
             Text("SyncSafe", style = MaterialTheme.typography.displayMedium, fontWeight = FontWeight.Bold, color = extra.authOnGradient)
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Conectare inteligentă.", style = MaterialTheme.typography.titleMedium, color = extra.authOnGradientMuted, textAlign = TextAlign.Center)
+            Text("Smart connection. Real-time safety.", style = MaterialTheme.typography.titleMedium, color = extra.authOnGradientMuted, textAlign = TextAlign.Center)
             
             Spacer(modifier = Modifier.height(48.dp))
 
             if (isSilentLoggingIn) {
                 CircularProgressIndicator(color = extra.authOnGradient)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Se restabilește sesiunea...", color = extra.authOnGradientMuted)
+                Text("Restoring session...", color = extra.authOnGradientMuted)
             } else {
                 Button(
                     onClick = onNavigateToLogin,

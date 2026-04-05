@@ -335,7 +335,7 @@ fun MapScreen(
                             ) {
                                 Text("📍 ${pt.name}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                                 TextButton(onClick = { onDeleteMeetingPoint(pt.id) }) {
-                                    Text("Șterge", color = MaterialTheme.colorScheme.error)
+                                    Text("Delete", color = MaterialTheme.colorScheme.error)
                                 }
                             }
                             
@@ -351,14 +351,14 @@ fun MapScreen(
                                         "${distance.toInt()} m"
                                     }
                                     Text(
-                                        text = "🗺️ Distanță față de tine: $distStr",
+                                        text = "🗺️ Distance from you: $distStr",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         modifier = Modifier.padding(top = 8.dp)
                                     )
                                 } else {
                                     Text(
-                                        text = "Activează locația pentru a calcula distanța.",
+                                        text = "Enable location to calculate distance.",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = Color.Gray,
                                         modifier = Modifier.padding(top = 8.dp)
@@ -410,7 +410,7 @@ fun MapScreen(
                             )
                         }
                         Text(
-                            text = if (member.hasLocation) "Pe hartă" else "Fără GPS",
+                            text = if (member.hasLocation) "On map" else "No GPS",
                             style = MaterialTheme.typography.labelSmall,
                             color = if (member.hasLocation) SafeGreen else Color.Gray
                         )

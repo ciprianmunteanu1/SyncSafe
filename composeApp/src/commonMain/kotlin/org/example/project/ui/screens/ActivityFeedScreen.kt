@@ -64,7 +64,7 @@ fun ActivityFeedScreen(alerts: List<Alert>) {
 
 @Composable
 fun AlertItemRow(alert: Alert) {
-    val isMajorEmergency = alert.type == AlertType.NEEDS_HELP && alert.message.contains("URGENȚĂ:")
+    val isMajorEmergency = alert.type == AlertType.NEEDS_HELP && alert.message.contains("EMERGENCY:")
 
     if (isMajorEmergency) {
         // ─── BANNER URGENȚĂ MAJORĂ ───
@@ -78,7 +78,7 @@ fun AlertItemRow(alert: Alert) {
                     Text(text = "🚨", style = MaterialTheme.typography.headlineMedium)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "URGENȚĂ MAJORĂ!",
+                        text = "MAJOR EMERGENCY!",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.White

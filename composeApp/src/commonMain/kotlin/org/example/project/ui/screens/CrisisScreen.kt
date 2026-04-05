@@ -29,8 +29,8 @@ fun CrisisScreen(
 ) {
     var showChecklist by remember { mutableStateOf(false) }
     var showCrisisDialog by remember { mutableStateOf(false) }
-    var selectedCrisisType by remember { mutableStateOf("Incendiu") }
-    val crisisOptions = listOf("Incendiu", "Cutremur", "Risc Militar", "Inundație")
+    var selectedCrisisType by remember { mutableStateOf("Fire") }
+    val crisisOptions = listOf("Fire", "Earthquake", "Military Risk", "Flood")
     val uriHandler = LocalUriHandler.current
 
     val infiniteTransition = rememberInfiniteTransition()
@@ -103,12 +103,12 @@ fun CrisisScreen(
 
                 OutlinedButton(
                     onClick = { 
-                        val query = if (crisisType == "Risc Militar") "adapost civil buncar" else "spital urgente"
+                        val query = if (crisisType == "Military Risk") "civil defense bunker" else "emergency hospital"
                         uriHandler.openUri("https://www.google.com/maps/search/?api=1&query=$query")
                     },
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                 ) {
-                    val label = if (crisisType == "Risc Militar") "🛡️ Bunkers" else "🏥 Hospitals"
+                    val label = if (crisisType == "Military Risk") "🛡️ Bunkers" else "🏥 Hospitals"
                     Text(label)
                 }
             }
@@ -137,10 +137,10 @@ fun CrisisScreen(
         if (showCrisisDialog) {
             AlertDialog(
                 onDismissRequest = { showCrisisDialog = false },
-                title = { Text("🚨 Confirmă Urgența") },
+                title = { Text("🚨 Confirm Emergency") },
                 text = {
                     Column {
-                        Text("Ești sigur că este o urgență reală? Selectează tipul:")
+                        Text("Are you sure this is a real emergency? Select type:")
                         Spacer(modifier = Modifier.height(16.dp))
                         Column(Modifier.selectableGroup()) {
                             crisisOptions.forEach { option ->
@@ -177,12 +177,12 @@ fun CrisisScreen(
                             onNeedHelpClick(selectedCrisisType)
                         }
                     ) {
-                        Text("🆘 Trimite Urgența", color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
+                        Text("🆘 Send Emergency", color = Color(0xFFF44336), fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showCrisisDialog = false }) {
-                        Text("Anulează")
+                        Text("Cancel")
                     }
                 }
             )
@@ -190,33 +190,33 @@ fun CrisisScreen(
 
         if (showChecklist) {
             val generalRules = listOf(
-                "Păstrează calmul: Menține-ți mintea limpede și analizează pericolul.",
-                "Evaluează situația: Ești într-un loc sigur? Dacă nu, mută-te urgent.",
-                "Sună la 112: Semnalează autoritățile dacă există victime.",
-                "Alertează grupul: Așteaptă confirmarea locațiilor de la ceilalți."
+                "Stay calm: Keep your mind clear and analyze the danger.",
+                "Assess situation: Are you in a safe place? If not, move urgently.",
+                "Call 112: Notify authorities if there are victims.",
+                "Alert group: Wait for location confirmations from others."
             )
 
             val specificRules = when (crisisType) {
-                "Incendiu" -> listOf(
-                    "Folosește scările, evită total lifturile",
-                    "Stai cât mai aproape de podea, aplecat",
-                    "Acoperă nasul/gura cu o cârpă umedă"
+                "Fire" -> listOf(
+                    "Use stairs, avoid elevators completely",
+                    "Stay as close to the floor as possible",
+                    "Cover nose/mouth with a damp cloth"
                 )
-                "Cutremur" -> listOf(
-                    "Adăpostește-te sub un birou/masă solidă",
-                    "Îndepărtează-te de ferestre sau mobilier înalt",
-                    "Așteaptă oprirea seismului înainte să ieși",
-                    "Nu folosi scările în timpul zguduiturii"
+                "Earthquake" -> listOf(
+                    "Take cover under a sturdy desk/table",
+                    "Stay away from windows or tall furniture",
+                    "Wait for the shaking to stop before exiting",
+                    "Do not use stairs during the earthquake"
                 )
-                "Risc Militar" -> listOf(
-                    "Evacuează zona organizat dacă ieșirea e sigură",
-                    "Nu declanșa echipamente electronice în proximitate",
-                    "Caută cel mai apropiat adăpost civil / buncăr"
+                "Military Risk" -> listOf(
+                    "Evacuate the area in an organized manner if exit is safe",
+                    "Do not trigger large electronic equipment nearby",
+                    "Seek the nearest civil shelter / bunker"
                 )
-                "Inundație" -> listOf(
-                    "Oprește alimentarea cu gaz și electricitate din panou",
-                    "Mută actele și proviziile la etajele superioare",
-                    "Evită contactul cu apa stagnantă sau tulbure de afară"
+                "Flood" -> listOf(
+                    "Turn off gas and electricity supply",
+                    "Move documents and supplies to upper floors",
+                    "Avoid contact with stagnant or muddy water outside"
                 )
                 else -> emptyList()
             }
@@ -244,7 +244,7 @@ fun CrisisScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { showChecklist = false }) {
-                        Text("Am înțeles", fontWeight = FontWeight.Bold)
+                        Text("Understood", fontWeight = FontWeight.Bold)
                     }
                 }
             )
