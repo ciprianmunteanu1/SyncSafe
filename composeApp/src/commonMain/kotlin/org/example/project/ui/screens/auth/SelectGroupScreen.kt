@@ -3,6 +3,8 @@ package org.example.project.ui.screens.auth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +21,7 @@ import org.example.project.ui.theme.EmergencyRed
 fun SelectGroupScreen(
     onCreateGroup: (String) -> Unit,
     onJoinGroup: (String) -> Unit,
+    onBack: (() -> Unit)? = null,
     onLogout: () -> Unit
 ) {
     var groupName by remember { mutableStateOf("") }
@@ -33,11 +36,17 @@ fun SelectGroupScreen(
             modifier = Modifier.fillMaxSize().padding(24.dp).systemBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                if (onBack != null) {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = s.loginBack, tint = extra.authOnGradient)
+                    }
+                }
                 Text(
                     s.youreLoggedIn,
                     style = MaterialTheme.typography.titleMedium,
-                    color = extra.authOnGradient
+                    color = extra.authOnGradient,
+                    modifier = Modifier.weight(1f).padding(start = if (onBack != null) 0.dp else 16.dp)
                 )
                 TextButton(onClick = onLogout) {
                     Text(s.logOut, color = EmergencyRed)
@@ -46,15 +55,16 @@ fun SelectGroupScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            Text(
-                s.notPartOfCircle,
-                style = MaterialTheme.typography.headlineSmall,
-                color = extra.authOnGradient,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
+            if (onBack == null) {
+                Text(
+                    s.notPartOfCircle,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = extra.authOnGradient,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
             
             // --- CREATE ---
             Card(

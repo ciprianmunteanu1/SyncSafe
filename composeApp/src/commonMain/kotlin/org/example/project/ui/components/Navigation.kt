@@ -175,6 +175,8 @@ fun Navigation(
                 )
             }
             composable("select_group") {
+                val hasGroups = (org.example.project.data.AuthRepository.currentUser?.joinedGroups?.size ?: 0) > 0
+                
                 SelectGroupScreen(
                     onCreateGroup = { name -> 
                         scope.launch {
@@ -193,6 +195,7 @@ fun Navigation(
                     onLogout = {
                         AuthManager.clearSession()
                         AuthRepository.logout()
+                        GroupRepository.clearLocalState()
                         navController.navigate("welcome") { popUpTo("select_group") { inclusive = true } }
                     }
                 )
@@ -204,7 +207,22 @@ fun Navigation(
                     onSwitchGroup = { inviteCode ->
                         scope.launch { GroupRepository.switchGroup(inviteCode) }
                     },
-                    onCreateOrJoin = { navController.navigate("select_group") },
+                    onCreateGroup = { name ->
+                        scope.launch {
+                            val res = GroupRepository.createGroup(name)
+                            if (res.isSuccess) {
+                                // optional feedback
+                            }
+                        }
+                    },
+                    onJoinGroup = { code ->
+                        scope.launch {
+                            val res = GroupRepository.joinGroup(code)
+                            if (res.isSuccess) {
+                                // optional feedback
+                            }
+                        }
+                    },
                     onSafeClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.SAFE) } },
                     onNeedHelpClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.NEEDS_HELP) } },
                     onOnMyWayClick = { scope.launch { GroupRepository.updateMyStatus(org.example.project.model.MemberStatus.ON_THE_WAY) } },
@@ -238,6 +256,7 @@ fun Navigation(
                     onLogoutClick = {
                         AuthManager.clearSession()
                         AuthRepository.logout()
+                        org.example.project.data.GroupRepository.clearLocalState()
                         navController.navigate("welcome") {
                             popUpTo("home") { inclusive = true }
                         }
@@ -278,9 +297,18 @@ fun Navigation(
                     currentLanguage = currentLanguage,
                     onChangeLanguage = onChangeLanguage,
                     onBack = { navController.popBackStack() },
+                    onLeaveGroup = {
+                        scope.launch {
+                            org.example.project.data.GroupRepository.leaveGroup()
+                            navController.navigate("select_group") {
+                                popUpTo("home") { inclusive = true }
+                            }
+                        }
+                    },
                     onLogout = {
                         AuthManager.clearSession()
                         AuthRepository.logout()
+                        org.example.project.data.GroupRepository.clearLocalState()
                         navController.navigate("welcome") {
                             popUpTo("home") { inclusive = true }
                         }

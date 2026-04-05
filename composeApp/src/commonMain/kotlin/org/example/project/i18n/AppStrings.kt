@@ -201,6 +201,7 @@ data class AppStrings(
     val off: String,
     val languageLabel: String,
     val logOut: String,
+    val leaveGroup: String,
 
     // ─── SOS Alert Popup (Navigation) ───────────────────────────────────────
     val sosEmergencyTitle: String,
@@ -362,6 +363,7 @@ val EnStrings = AppStrings(
     memberId = "Member ID: %s", circlesJoined = "%d Circle%s joined",
     appearance = "Appearance", darkMode = "Dark Mode",
     on = "On", off = "Off", languageLabel = "Language", logOut = "Log Out",
+    leaveGroup = "Leave Circle",
 
     // SOS
     sosEmergencyTitle = "🚨 EMERGENCY!",
@@ -521,6 +523,7 @@ val RoStrings = AppStrings(
     memberId = "ID Membru: %s", circlesJoined = "%d cerc(uri) alăturat(e)",
     appearance = "Aspect", darkMode = "Mod întunecat",
     on = "Activat", off = "Dezactivat", languageLabel = "Limbă", logOut = "Deconectare",
+    leaveGroup = "Părăsește Cercul",
 
     // SOS
     sosEmergencyTitle = "🚨 URGENȚĂ!",

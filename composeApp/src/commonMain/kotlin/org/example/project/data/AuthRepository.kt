@@ -134,6 +134,36 @@ object AuthRepository {
         }
     }
 
+    suspend fun leaveCircle(inviteCode: String): Result<Unit> {
+        return try {
+            val user = currentUser ?: return Result.failure(Exception("No logged in user"))
+            
+            val updatedJoinedGroups = user.joinedGroups.toMutableMap()
+            updatedJoinedGroups.remove(inviteCode)
+            
+            val newActiveGroup = if (user.lastActiveGroup == inviteCode) {
+                updatedJoinedGroups.keys.firstOrNull()
+            } else {
+                user.lastActiveGroup
+            }
+            
+            val updatedUser = user.copy(
+                joinedGroups = updatedJoinedGroups,
+                lastActiveGroup = newActiveGroup
+            )
+            
+            val endpoint = "$BASE_URL/users/${user.username}.json"
+            client.put(endpoint) {
+                contentType(ContentType.Application.Json)
+                setBody(json.encodeToString(UserAccount.serializer(), updatedUser))
+            }.bodyAsText()
+            currentUser = updatedUser
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun logout() {
         currentUser = null
     }

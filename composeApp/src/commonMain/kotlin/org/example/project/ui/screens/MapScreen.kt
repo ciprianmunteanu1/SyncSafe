@@ -195,7 +195,9 @@ val leafletHtmlTemplate = """
             }
         };
 
-        map.on('dblclick', function(e) {
+        var longPressTimer;
+        
+        function handleLongPress(e) {
             if(window.kmpJsBridge) {
                 window.kmpJsBridge.callNative(
                     "setMeetingPoint",
@@ -203,6 +205,20 @@ val leafletHtmlTemplate = """
                     function(data) {}
                 );
             }
+        }
+
+        map.on('contextmenu', function(e) {
+            handleLongPress(e);
+        });
+        
+        map.on('mousedown touchstart', function(e) {
+            longPressTimer = setTimeout(function() {
+                handleLongPress(e);
+            }, 600); // 600ms long press delay
+        });
+
+        map.on('mouseup mousemove touchend touchmove', function(e) {
+            clearTimeout(longPressTimer);
         });
     </script>
 </body>

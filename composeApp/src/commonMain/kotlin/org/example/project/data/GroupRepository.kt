@@ -91,6 +91,10 @@ object GroupRepository {
     /** Codul de invitare al grupului curent, necesar pentru URL-urile Firebase. */
     private var currentInviteCode: String? = null
 
+    // Ultimele coordonate cunoscute (necesare pe iOS dacă primim locația înainte de login)
+    private var lastKnownLat: Double? = null
+    private var lastKnownLng: Double? = null
+
     // ─── Stare observabilă (publică) ─────────────────────────────────────────
 
     private val _group = MutableStateFlow<Group?>(null)
@@ -164,6 +168,14 @@ object GroupRepository {
             AuthRepository.joinCircle(group.inviteCode, group.name)
 
             startPolling(group.inviteCode)
+            
+            // Dacă am primit deja GPS înainte să se logheze (ex: pe iOS)
+            val cachedLat = lastKnownLat
+            val cachedLng = lastKnownLng
+            if (cachedLat != null && cachedLng != null) {
+                updateMyLocation(cachedLat, cachedLng)
+            }
+            
             Result.success(group)
 
         } catch (e: Exception) {
@@ -220,10 +232,17 @@ object GroupRepository {
 
             _group.value = updatedGroup
             
-            // Link-ăm utilizatorul de acest grup în contul centralizat
             AuthRepository.joinCircle(fetchedGroup.inviteCode, fetchedGroup.name)
 
             startPolling(fetchedGroup.inviteCode)
+            
+            // Trimite locația cache-uită dacă a fost captată devreme
+            val cachedLat = lastKnownLat
+            val cachedLng = lastKnownLng
+            if (cachedLat != null && cachedLng != null) {
+                updateMyLocation(cachedLat, cachedLng)
+            }
+            
             Result.success(updatedGroup)
 
         } catch (e: Exception) {
@@ -248,6 +267,14 @@ object GroupRepository {
             if (group != null && group.members.any { it.id == user.memberId }) {
                 // Dacă grupul încă există, continuăm cu polling
                 startPolling(inviteCode)
+                
+                // Trimite locația cache-uită
+                val cachedLat = lastKnownLat
+                val cachedLng = lastKnownLng
+                if (cachedLat != null && cachedLng != null) {
+                    updateMyLocation(cachedLat, cachedLng)
+                }
+                
                 Result.success(group)
             } else {
                 // Grupul probabil a fost șters, sau userul a fost kickat
@@ -262,6 +289,50 @@ object GroupRepository {
         stopPolling()
         AuthRepository.setActiveCircle(inviteCode)
         return connectToGroup(inviteCode)
+    }
+
+    suspend fun leaveGroup(): Result<Unit> {
+        return try {
+            val id = myMemberId ?: return Result.failure(Exception("No member id"))
+            val currentGroup = _group.value ?: return Result.failure(Exception("Not in a group"))
+            val name = me?.name ?: "A member"
+            
+            val updatedMembers = currentGroup.members.filterNot { it.id == id }
+            val updatedGroup = currentGroup.copy(members = updatedMembers)
+            
+            putGroup(updatedGroup)
+            
+            if (updatedMembers.isNotEmpty()) {
+                pushAlert(
+                    inviteCode = currentGroup.inviteCode,
+                    memberId = id,
+                    memberName = name,
+                    type = AlertType.STATUS_CHANGED,
+                    message = "$name s-a retras din grup."
+                )
+            }
+            
+            AuthRepository.leaveCircle(currentGroup.inviteCode)
+            
+            stopPolling()
+            _group.value = null
+            _alerts.value = emptyList()
+            myMemberId = null
+            currentInviteCode = null
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /** Curăță starea locală a repozitoriului, fără a părăsi efectiv grupul în cloud. */
+    fun clearLocalState() {
+        stopPolling()
+        _group.value = null
+        _alerts.value = emptyList()
+        myMemberId = null
+        currentInviteCode = null
     }
 
     // ─── Operații pe status ───────────────────────────────────────────────────
@@ -329,6 +400,9 @@ object GroupRepository {
      * Apelat de [LocationService] la fiecare schimbare semnificativă de locație.
      */
     suspend fun updateMyLocation(latitude: Double, longitude: Double) {
+        lastKnownLat = latitude
+        lastKnownLng = longitude
+        
         val id = myMemberId ?: return
         val currentGroup = _group.value ?: return
         val name = me?.name ?: return

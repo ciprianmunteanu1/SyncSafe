@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.example.project.model.Member
+import org.example.project.platform.formatTimestamp
 
 @Composable
 fun MemberCard(member: Member, modifier: Modifier = Modifier) {
@@ -31,8 +32,9 @@ fun MemberCard(member: Member, modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.titleLarge
                 )
                 if (member.lastUpdatedAt > 0L) {
+                    val formatted = formatTimestamp(member.lastUpdatedAt)
                     Text(
-                        text = "Updated: ${member.lastUpdatedAt}",
+                        text = "Updated: $formatted",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )

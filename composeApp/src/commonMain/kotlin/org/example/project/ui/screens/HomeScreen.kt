@@ -39,13 +39,73 @@ fun HomeScreen(
     group: Group?,
     joinedGroups: Map<String, String>,
     onSwitchGroup: (String) -> Unit,
-    onCreateOrJoin: () -> Unit,
+    onCreateGroup: (String) -> Unit,
+    onJoinGroup: (String) -> Unit,
     onSafeClick: () -> Unit,
     onNeedHelpClick: () -> Unit,
     onOnMyWayClick: () -> Unit,
     onCrisisModeClick: () -> Unit
 ) {
     val s = stringsFor(LocalAppLanguage.current)
+    var showAddCircleDialog by remember { mutableStateOf(false) }
+
+    if (showAddCircleDialog) {
+        var isCreateMode by remember { mutableStateOf(true) }
+        var inputText by remember { mutableStateOf("") }
+        
+        AlertDialog(
+            onDismissRequest = { showAddCircleDialog = false },
+            title = {
+                Text(
+                    if (isCreateMode) s.createACircle else s.joinACircle,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp), horizontalArrangement = Arrangement.Center) {
+                        FilterChip(
+                            selected = isCreateMode,
+                            onClick = { isCreateMode = true; inputText = "" },
+                            label = { Text(s.createACircle) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        FilterChip(
+                            selected = !isCreateMode,
+                            onClick = { isCreateMode = false; inputText = "" },
+                            label = { Text(s.joinACircle) }
+                        )
+                    }
+                    
+                    OutlinedTextField(
+                        value = inputText,
+                        onValueChange = { inputText = if (isCreateMode) it else it.uppercase() },
+                        label = { Text(if (isCreateMode) s.circleName else s.inviteCodeLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (inputText.isNotBlank()) {
+                            if (isCreateMode) onCreateGroup(inputText) else onJoinGroup(inputText)
+                            showAddCircleDialog = false
+                        }
+                    },
+                    enabled = inputText.isNotBlank()
+                ) {
+                    Text(if (isCreateMode) s.createButton else s.joinButton)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddCircleDialog = false }) {
+                    Text(s.loginBack)
+                }
+            }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // CRISIS MODE BANNER
@@ -91,7 +151,7 @@ fun HomeScreen(
 
                     item {
                         IconButton(
-                            onClick = onCreateOrJoin,
+                            onClick = { showAddCircleDialog = true },
                             modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), shape = MaterialTheme.shapes.small)
                         ) {
                             Icon(Icons.Filled.Add, contentDescription = s.addCircle, tint = MaterialTheme.colorScheme.primary)
@@ -180,7 +240,7 @@ fun HomeScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(s.noActiveCircle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onCreateOrJoin) {
+                    Button(onClick = { showAddCircleDialog = true }) {
                         Text(s.createOrJoinCircle)
                     }
                 }

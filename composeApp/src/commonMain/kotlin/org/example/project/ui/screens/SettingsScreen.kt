@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.data.AuthRepository
+import org.example.project.data.GroupRepository
 import org.example.project.i18n.AppLanguage
 import org.example.project.i18n.LocalAppLanguage
 import org.example.project.i18n.stringsFor
@@ -29,6 +30,7 @@ fun SettingsScreen(
     currentLanguage: AppLanguage,
     onChangeLanguage: (AppLanguage) -> Unit,
     onBack: () -> Unit,
+    onLeaveGroup: () -> Unit,
     onLogout: () -> Unit
 ) {
     val currentUser = AuthRepository.currentUser
@@ -242,20 +244,41 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // ── LOGOUT ──
-            Button(
-                onClick = onLogout,
+            // ── LEAVE GROUP & LOGOUT ──
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp)
-                    .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                )
+                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(s.logOut, fontWeight = FontWeight.Bold)
+                if (GroupRepository.isInGroup) {
+                    OutlinedButton(
+                        onClick = onLeaveGroup,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Text(s.leaveGroup, fontWeight = FontWeight.Bold)
+                    }
+                }
+                
+                Button(
+                    onClick = onLogout,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(s.logOut, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
